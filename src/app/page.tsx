@@ -105,13 +105,17 @@ export default function HomePage() {
               Where code meets style. Premium apparel designed for developers, engineers, and tech enthusiasts who want to wear their passion.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
-                Shop Now
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-black">
-                View Collection
-              </Button>
+              <Link href="/products">
+                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
+                  Shop Now
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </Link>
+              <Link href="/products">
+                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-black">
+                  View Collection
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
