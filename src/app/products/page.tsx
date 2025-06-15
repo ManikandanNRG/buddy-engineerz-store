@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search, Filter, ArrowUpDown, Grid, List, ShoppingCart, Heart } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import { Search, Filter, ArrowUpDown, Grid, List, ShoppingCart, Heart, X } from 'lucide-react'
 import { getProducts, getCategories, formatPrice, calculateDiscount } from '@/lib/database'
 import { useCartStore } from '@/store/cart'
 import type { Product, Category } from '@/lib/supabase'
@@ -9,32 +10,63 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 export default function ProductsPage() {
+  const searchParams = useSearchParams()
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedGender, setSelectedGender] = useState<string>('all')
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000])
   const [sortBy, setSortBy] = useState<string>('newest')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showFilters, setShowFilters] = useState(false)
 
   const { addItem } = useCartStore()
 
+  // Initialize search term from URL parameters
+  useEffect(() => {
+    const urlSearch = searchParams.get('search')
+    const urlCategory = searchParams.get('category')
+    const urlGender = searchParams.get('gender')
+    
+    if (urlSearch) setSearchTerm(urlSearch)
+    if (urlCategory) setSelectedCategory(urlCategory)
+    if (urlGender) setSelectedGender(urlGender)
+  }, [searchParams])
+
   useEffect(() => {
     async function fetchData() {
       setLoading(true)
+      setError(null)
       try {
         const [productsResult, categoriesResult] = await Promise.all([
           getProducts(),
           getCategories()
         ])
 
-        if (productsResult.products) setProducts(productsResult.products)
-        if (categoriesResult.categories) setCategories(categoriesResult.categories)
+        if (productsResult.error) {
+          setError('Failed to load products. Please try again.')
+          console.error('Products error:', productsResult.error)
+        } else if (productsResult.products) {
+          setProducts(productsResult.products)
+          // Set price range based on actual product prices
+          const prices = productsResult.products.map(p => p.price)
+          const minPrice = Math.min(...prices)
+          const maxPrice = Math.max(...prices)
+          setPriceRange([minPrice, maxPrice])
+        }
+
+        if (categoriesResult.error) {
+          console.error('Categories error:', categoriesResult.error)
+        } else if (categoriesResult.categories) {
+          setCategories(categoriesResult.categories)
+        }
       } catch (error) {
         console.error('Error fetching data:', error)
+        setError('Failed to load data. Please check your connection.')
       } finally {
         setLoading(false)
       }
@@ -65,6 +97,11 @@ export default function ProductsPage() {
       filtered = filtered.filter(product => product.gender === selectedGender)
     }
 
+    // Filter by price range
+    filtered = filtered.filter(product => 
+      product.price >= priceRange[0] && product.price <= priceRange[1]
+    )
+
     // Sort products
     filtered.sort((a, b) => {
       switch (sortBy) {
@@ -81,17 +118,27 @@ export default function ProductsPage() {
     })
 
     setFilteredProducts(filtered)
-  }, [products, searchTerm, selectedCategory, selectedGender, sortBy])
+  }, [products, searchTerm, selectedCategory, selectedGender, priceRange, sortBy])
 
   const handleAddToCart = (product: Product) => {
-    addItem({
-      id: product.id,
-      product,
-      quantity: 1,
-      size: product.sizes[0] || undefined,
-      color: product.colors[0] || undefined
-    })
+    const defaultSize = product.sizes[0] || 'M'
+    const defaultColor = product.colors[0] || 'Default'
+    addItem(product, defaultSize, defaultColor, 1)
   }
+
+  const clearAllFilters = () => {
+    setSearchTerm('')
+    setSelectedCategory('all')
+    setSelectedGender('all')
+    const prices = products.map(p => p.price)
+    setPriceRange([Math.min(...prices), Math.max(...prices)])
+  }
+
+  const activeFiltersCount = [
+    searchTerm,
+    selectedCategory !== 'all' ? selectedCategory : null,
+    selectedGender !== 'all' ? selectedGender : null,
+  ].filter(Boolean).length
 
   if (loading) {
     return (
@@ -99,6 +146,14 @@ export default function ProductsPage() {
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-8">
             <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+            <div className="bg-white rounded-lg p-6 space-y-4">
+              <div className="h-10 bg-gray-200 rounded"></div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="h-10 bg-gray-200 rounded"></div>
+                <div className="h-10 bg-gray-200 rounded"></div>
+                <div className="h-10 bg-gray-200 rounded"></div>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[...Array(8)].map((_, i) => (
                 <div key={i} className="bg-white rounded-lg p-4 space-y-4">
@@ -109,6 +164,23 @@ export default function ProductsPage() {
               ))}
             </div>
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Oops! Something went wrong</h1>
+          <p className="text-gray-600 mb-8">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700"
+          >
+            Try Again
+          </button>
         </div>
       </div>
     )
@@ -140,6 +212,14 @@ export default function ProductsPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
 
             <div className="flex items-center gap-4">
@@ -150,6 +230,11 @@ export default function ProductsPage() {
               >
                 <Filter className="h-4 w-4" />
                 Filters
+                {activeFiltersCount > 0 && (
+                  <span className="bg-purple-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {activeFiltersCount}
+                  </span>
+                )}
               </button>
 
               {/* View Mode */}
@@ -184,7 +269,7 @@ export default function ProductsPage() {
 
           {/* Filters Row */}
           <div className={`mt-4 pt-4 border-t border-gray-200 ${showFilters || 'hidden lg:block'}`}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* Category Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -221,11 +306,40 @@ export default function ProductsPage() {
                 </select>
               </div>
 
-              {/* Results Count */}
-              <div className="flex items-end">
-                <p className="text-sm text-gray-600">
+              {/* Price Range Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Price Range
+                </label>
+                <div className="space-y-2">
+                  <input
+                    type="range"
+                    min={Math.min(...products.map(p => p.price))}
+                    max={Math.max(...products.map(p => p.price))}
+                    value={priceRange[1]}
+                    onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>{formatPrice(priceRange[0])}</span>
+                    <span>{formatPrice(priceRange[1])}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Results Count & Clear Filters */}
+              <div className="flex flex-col justify-end">
+                <p className="text-sm text-gray-600 mb-2">
                   Showing {filteredProducts.length} of {products.length} products
                 </p>
+                {activeFiltersCount > 0 && (
+                  <button
+                    onClick={clearAllFilters}
+                    className="text-sm text-purple-600 hover:text-purple-700 text-left"
+                  >
+                    Clear all filters
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -234,16 +348,13 @@ export default function ProductsPage() {
         {/* Products Grid */}
         {filteredProducts.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-gray-500 text-lg">No products found matching your criteria.</p>
+            <p className="text-gray-500 text-lg mb-4">No products found matching your criteria.</p>
+            <p className="text-gray-400 mb-6">Try adjusting your filters or search terms.</p>
             <button
-              onClick={() => {
-                setSearchTerm('')
-                setSelectedCategory('all')
-                setSelectedGender('all')
-              }}
-              className="mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              onClick={clearAllFilters}
+              className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
             >
-              Clear Filters
+              Clear All Filters
             </button>
           </div>
         ) : (

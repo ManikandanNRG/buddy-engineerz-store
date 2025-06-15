@@ -2,13 +2,101 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { Search, ShoppingCart, User, Menu, X } from 'lucide-react'
+import { Search, ShoppingCart, User, Menu, X, LogOut, Settings, Package } from 'lucide-react'
 import { useCartStore } from '@/store/cart'
+import { useAuth } from '@/hooks/useAuth'
+
+// User Menu Component
+function UserMenu() {
+  const { user, profile, loading, signOut } = useAuth()
+  const [isOpen, setIsOpen] = useState(false)
+
+  const handleSignOut = async () => {
+    await signOut()
+    setIsOpen(false)
+  }
+
+  // Show loading skeleton while auth is loading
+  if (loading) {
+    return (
+      <div className="flex items-center space-x-2">
+        <div className="w-16 h-6 bg-gray-200 rounded animate-pulse"></div>
+        <div className="w-20 h-8 bg-gray-200 rounded animate-pulse"></div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="flex items-center space-x-2">
+        <Link
+          href="/auth/login"
+          className="text-sm text-gray-700 hover:text-purple-600 transition-colors"
+        >
+          Sign In
+        </Link>
+        <Link
+          href="/auth/signup"
+          className="bg-purple-600 text-white px-3 py-1.5 rounded-md text-sm hover:bg-purple-700 transition-colors"
+        >
+          Sign Up
+        </Link>
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center space-x-2 p-2 text-gray-700 hover:text-purple-600 transition-colors"
+      >
+        <User className="h-6 w-6" />
+        <span className="hidden md:block text-sm">{profile?.name || user.email}</span>
+      </button>
+
+      {isOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setIsOpen(false)}
+          />
+          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20 border border-gray-200">
+            <Link
+              href="/account"
+              className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              onClick={() => setIsOpen(false)}
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Account Settings
+            </Link>
+            <Link
+              href="/orders"
+              className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              onClick={() => setIsOpen(false)}
+            >
+              <Package className="h-4 w-4 mr-2" />
+              My Orders
+            </Link>
+            <hr className="my-1" />
+            <button
+              onClick={handleSignOut}
+              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
 
 export default function Header() {
   const [searchTerm, setSearchTerm] = useState('')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { items } = useCartStore()
+  const { items, isLoading, isHydrated } = useCartStore()
 
   const cartItemsCount = items.reduce((total: number, item: any) => total + item.quantity, 0)
 
@@ -66,17 +154,20 @@ export default function Header() {
             {/* Cart */}
             <Link href="/cart" className="relative p-2 text-gray-700 hover:text-purple-600 transition-colors">
               <ShoppingCart className="h-6 w-6" />
-              {cartItemsCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {cartItemsCount}
-                </span>
+              {(isLoading || !isHydrated) ? (
+                // Show loading skeleton for cart count
+                <div className="absolute -top-1 -right-1 bg-gray-200 rounded-full h-5 w-5 animate-pulse"></div>
+              ) : (
+                cartItemsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {cartItemsCount}
+                  </span>
+                )
               )}
             </Link>
 
-            {/* User */}
-            <Link href="/account" className="p-2 text-gray-700 hover:text-purple-600 transition-colors">
-              <User className="h-6 w-6" />
-            </Link>
+            {/* User Menu */}
+            <UserMenu />
 
             {/* Mobile Menu Button */}
             <button

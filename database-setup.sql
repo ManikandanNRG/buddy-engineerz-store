@@ -45,6 +45,7 @@ CREATE TABLE user_profiles (
 CREATE TABLE addresses (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     user_id UUID REFERENCES auth.users(id),
+    type VARCHAR(20) DEFAULT 'home' CHECK (type IN ('home', 'work', 'other')),
     name VARCHAR(255) NOT NULL,
     phone VARCHAR(20) NOT NULL,
     address_line_1 VARCHAR(255) NOT NULL,
@@ -54,7 +55,8 @@ CREATE TABLE addresses (
     pincode VARCHAR(10) NOT NULL,
     country VARCHAR(100) DEFAULT 'India',
     is_default BOOLEAN DEFAULT false,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Create Orders table
@@ -197,4 +199,5 @@ $$ language 'plpgsql';
 -- Create triggers for auto-updating updated_at
 CREATE TRIGGER update_products_updated_at BEFORE UPDATE ON products FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_user_profiles_updated_at BEFORE UPDATE ON user_profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_addresses_updated_at BEFORE UPDATE ON addresses FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_orders_updated_at BEFORE UPDATE ON orders FOR EACH ROW EXECUTE FUNCTION update_updated_at_column(); 

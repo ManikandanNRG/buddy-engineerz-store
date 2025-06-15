@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
+import { Suspense } from "react";
 import "./globals.css";
-import Header from "@/components/layout/header";
+import Header from "@/components/Header";
+import NavigationProgress from "@/components/NavigationProgress";
+import PageTransition from "@/components/PageTransition";
+import { AuthProvider } from "@/hooks/useAuth";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,10 +54,18 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning={true}
       >
-        <Header />
-        <main className="min-h-screen">
-          {children}
-        </main>
+        <AuthProvider>
+          <Suspense fallback={null}>
+            <NavigationProgress />
+          </Suspense>
+          <Suspense fallback={null}>
+            <PageTransition />
+          </Suspense>
+          <Header />
+          <main className="min-h-screen">
+            {children}
+          </main>
+        </AuthProvider>
         <footer className="border-t py-8 mt-16">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -65,19 +78,19 @@ export default function RootLayout({
               <div>
                 <h3 className="font-semibold mb-4">Shop</h3>
                 <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li><a href="/products?gender=men">Men&apos;s Collection</a></li>
-                  <li><a href="/products?gender=women">Women&apos;s Collection</a></li>
-                  <li><a href="/products?category=accessories">Accessories</a></li>
-                  <li><a href="/sale">Sale</a></li>
+                  <li><Link href="/products?gender=men">Men&apos;s Collection</Link></li>
+                  <li><Link href="/products?gender=women">Women&apos;s Collection</Link></li>
+                  <li><Link href="/products?category=accessories">Accessories</Link></li>
+                  <li><Link href="/sale">Sale</Link></li>
                 </ul>
               </div>
               <div>
                 <h3 className="font-semibold mb-4">Support</h3>
                 <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li><a href="/contact">Contact Us</a></li>
-                  <li><a href="/shipping">Shipping Info</a></li>
-                  <li><a href="/returns">Returns</a></li>
-                  <li><a href="/size-guide">Size Guide</a></li>
+                  <li><Link href="/contact">Contact Us</Link></li>
+                  <li><Link href="/shipping">Shipping Info</Link></li>
+                  <li><Link href="/returns">Returns</Link></li>
+                  <li><Link href="/size-guide">Size Guide</Link></li>
                 </ul>
               </div>
               <div>

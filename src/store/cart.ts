@@ -5,6 +5,8 @@ import { CartItem, Product } from '@/lib/supabase'
 interface CartStore {
   items: CartItem[]
   isOpen: boolean
+  isLoading: boolean
+  isHydrated: boolean
   addItem: (product: Product, size: string, color: string, quantity?: number) => void
   removeItem: (id: string) => void
   updateQuantity: (id: string, quantity: number) => void
@@ -13,6 +15,7 @@ interface CartStore {
   closeCart: () => void
   getTotalItems: () => number
   getTotalPrice: () => number
+  setHydrated: () => void
 }
 
 export const useCartStore = create<CartStore>()(
@@ -20,6 +23,8 @@ export const useCartStore = create<CartStore>()(
     (set, get) => ({
       items: [],
       isOpen: false,
+      isLoading: true,
+      isHydrated: false,
       
       addItem: (product, size, color, quantity = 1) => {
         const existingItemId = `${product.id}-${size}-${color}`
@@ -84,10 +89,20 @@ export const useCartStore = create<CartStore>()(
       
       getTotalPrice: () => {
         return get().items.reduce((total, item) => total + (item.product.price * item.quantity), 0)
+      },
+
+      setHydrated: () => {
+        set({ isHydrated: true, isLoading: false })
       }
     }),
     {
       name: 'buddy-engineerz-cart',
+      onRehydrateStorage: () => (state) => {
+        // Called when hydration is complete
+        if (state) {
+          state.setHydrated()
+        }
+      },
     }
   )
 ) 

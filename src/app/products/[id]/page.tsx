@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, ShoppingCart, Heart, Share2, Star, Truck, Shield, RotateCcw } from 'lucide-react'
+import { ArrowLeft, ShoppingCart, Heart, Share2, Star, Truck, Shield, RotateCcw, Plus, Minus, Check } from 'lucide-react'
 import { getProductById, formatPrice, calculateDiscount } from '@/lib/database'
 import { useCartStore } from '@/store/cart'
 import type { Product } from '@/lib/supabase'
@@ -19,6 +19,7 @@ export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState<number>(0)
   const [quantity, setQuantity] = useState<number>(1)
   const [isWishlisted, setIsWishlisted] = useState(false)
+  const [showAddedToast, setShowAddedToast] = useState(false)
 
   const { addItem } = useCartStore()
 
@@ -53,16 +54,10 @@ export default function ProductDetailPage() {
   const handleAddToCart = () => {
     if (!product) return
 
-    addItem({
-      id: product.id,
-      product,
-      quantity,
-      size: selectedSize,
-      color: selectedColor
-    })
+    addItem(product, selectedSize, selectedColor, quantity)
 
-    // Show success feedback (you could add a toast here)
-    alert('Product added to cart!')
+    setShowAddedToast(true)
+    setTimeout(() => setShowAddedToast(false), 3000)
   }
 
   const handleBuyNow = () => {
@@ -119,6 +114,14 @@ export default function ProductDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Success Toast */}
+      {showAddedToast && (
+        <div className="fixed top-4 right-4 z-50 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-in slide-in-from-top-2">
+          <Check className="h-5 w-5" />
+          <span>Added to cart!</span>
+        </div>
+      )}
+
       <div className="container mx-auto px-4 py-8">
         {/* Back Button */}
         <button
@@ -287,14 +290,14 @@ export default function ProductDetailPage() {
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     className="px-3 py-2 hover:bg-gray-50"
                   >
-                    -
+                    <Minus className="h-4 w-4" />
                   </button>
-                  <span className="px-4 py-2 border-x border-gray-300">{quantity}</span>
+                  <span className="px-4 py-2 border-x border-gray-300 min-w-[3rem] text-center">{quantity}</span>
                   <button
                     onClick={() => setQuantity(quantity + 1)}
                     className="px-3 py-2 hover:bg-gray-50"
                   >
-                    +
+                    <Plus className="h-4 w-4" />
                   </button>
                 </div>
                 <span className="text-gray-600">
