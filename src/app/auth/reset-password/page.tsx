@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff, Lock, ArrowLeft, Loader2, CheckCircle } from 'lucide-react'
 import { updatePassword, getErrorMessage, isValidPassword, safeGetSession } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   
@@ -198,10 +198,7 @@ export default function ResetPasswordPage() {
             </p>
             <div className="space-y-3">
               <button
-                onClick={() => {
-                  // Clear any cached form data and redirect to login
-                  window.location.href = '/auth/login'
-                }}
+                onClick={() => router.push('/auth/login')}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
               >
                 Sign In Now
@@ -239,7 +236,7 @@ export default function ResetPasswordPage() {
         </div>
 
         <h2 className="text-center text-3xl font-bold text-gray-900">
-          Set new password
+          Reset your password
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Enter your new password below
@@ -329,15 +326,33 @@ export default function ResetPasswordPage() {
 
             {/* Password Requirements */}
             <div className="text-sm text-gray-600">
-              <p className="font-medium mb-1">Password requirements:</p>
+              <p className="mb-2">Password requirements:</p>
               <ul className="list-disc list-inside space-y-1">
                 <li>At least 6 characters long</li>
-                <li>Should contain a mix of letters and numbers</li>
+                <li>Mix of letters and numbers recommended</li>
               </ul>
             </div>
 
+            {/* Submit Button */}
+            <div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Updating Password...
+                  </div>
+                ) : (
+                  'Update Password'
+                )}
+              </button>
+            </div>
+
             {/* Error/Success Message */}
-            {message && (
+            {message && !success && (
               <div className={`p-3 rounded-md ${
                 message.includes('successfully') 
                   ? 'bg-green-50 text-green-800 border border-green-200' 
@@ -346,40 +361,24 @@ export default function ResetPasswordPage() {
                 <p className="text-sm">{message}</p>
               </div>
             )}
-
-            {/* Submit Button */}
-            <div>
-              <button
-                type="submit"
-                disabled={loading || !isValidSession}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Updating password...
-                  </div>
-                ) : (
-                  'Update Password'
-                )}
-              </button>
-            </div>
           </form>
-
-          {/* Additional Help */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Need to request a new reset link?{' '}
-              <Link
-                href="/auth/forgot-password"
-                className="font-medium text-purple-600 hover:text-purple-500"
-              >
-                Click here
-              </Link>
-            </p>
-          </div>
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin text-purple-600" />
+          <span className="text-gray-600">Loading...</span>
+        </div>
+      </div>
+    }>
+      <ResetPasswordForm />
+    </Suspense>
   )
 } 
