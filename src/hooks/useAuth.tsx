@@ -39,7 +39,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         } else {
           setProfile(userProfile)
         }
-      } catch (error) {
+      } catch (error: any) {
+        // Handle auth session errors gracefully
+        if (error?.message?.includes('Auth session missing') || 
+            error?.name === 'AuthSessionMissingError') {
+          console.log('ℹ️ Session expired during profile refresh')
+          setUser(null)
+          setProfile(null)
+          return
+        }
         console.error('Error in refreshProfile:', error)
         // Don't throw the error, just log it
       }
@@ -47,10 +55,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   const handleSignOut = async () => {
-    const { signOut } = await import('@/lib/auth')
-    await signOut()
-    setUser(null)
-    setProfile(null)
+    try {
+      const { signOut } = await import('@/lib/auth')
+      await signOut()
+    } catch (error) {
+      console.error('Error during sign out:', error)
+    } finally {
+      // Always clear state regardless of sign out success/failure
+      setUser(null)
+      setProfile(null)
+    }
   }
 
   useEffect(() => {
@@ -58,7 +72,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     
     const initializeAuth = async () => {
       try {
-        // Get initial user
+        // Get initial user with enhanced error handling
         const currentUser = await getCurrentUser()
         
         if (mounted) {
@@ -67,8 +81,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
             await refreshProfile()
           }
         }
-      } catch (error) {
-        console.error('Error initializing auth:', error)
+      } catch (error: any) {
+        // Handle auth session errors during initialization
+        if (error?.message?.includes('Auth session missing') || 
+            error?.name === 'AuthSessionMissingError') {
+          console.log('ℹ️ No active session during initialization')
+          if (mounted) {
+            setUser(null)
+            setProfile(null)
+          }
+        } else {
+          console.error('Error initializing auth:', error)
+        }
       } finally {
         if (mounted) {
           // Minimum loading time to prevent flickering
@@ -82,7 +106,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     initializeAuth()
 
-    // Listen for auth changes
+    // Listen for auth changes with enhanced error handling
     const { data: { subscription } } = onAuthStateChange(async (authUser) => {
       console.log('Auth state changed:', { user: !!authUser, email: authUser?.email })
       
@@ -91,8 +115,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (authUser) {
           try {
             await refreshProfile()
-          } catch (error) {
-            console.error('Error refreshing profile:', error)
+          } catch (error: any) {
+            // Handle auth session errors during profile refresh
+            if (error?.message?.includes('Auth session missing') || 
+                error?.name === 'AuthSessionMissingError') {
+              console.log('ℹ️ Session expired during auth state change')
+              setUser(null)
+              setProfile(null)
+            } else {
+              console.error('Error refreshing profile:', error)
+            }
           }
         } else {
           setProfile(null)

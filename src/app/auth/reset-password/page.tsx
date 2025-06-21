@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff, Lock, ArrowLeft, Loader2, CheckCircle } from 'lucide-react'
-import { updatePassword, getErrorMessage, isValidPassword } from '@/lib/auth'
+import { updatePassword, getErrorMessage, isValidPassword, safeGetSession } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
 
 export default function ResetPasswordPage() {
@@ -51,17 +51,23 @@ export default function ResetPasswordPage() {
             setMessage('Invalid or expired reset link. Please request a new password reset.')
           }
         } else {
-          // Check if user already has a valid session (direct navigation)
-          const { data: { session } } = await supabase.auth.getSession()
+          // Check if user already has a valid session (direct navigation) using safe wrapper
+          const { data: { session } } = await safeGetSession()
           if (session) {
             setIsValidSession(true)
           } else {
             setMessage('Invalid or expired reset link. Please request a new password reset.')
           }
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Auth session error:', error)
-        setMessage('An error occurred while validating the reset link.')
+        // Handle AuthSessionMissingError specifically
+        if (error?.message?.includes('Auth session missing') || 
+            error?.name === 'AuthSessionMissingError') {
+          setMessage('Invalid or expired reset link. Please request a new password reset.')
+        } else {
+          setMessage('An error occurred while validating the reset link.')
+        }
       } finally {
         setSessionLoading(false)
       }

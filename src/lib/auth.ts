@@ -113,9 +113,37 @@ export async function signOut(): Promise<{ error: AuthError | null }> {
   }
 }
 
+// Safe wrapper for getting user that handles session errors
+async function safeGetUser() {
+  try {
+    return await supabase.auth.getUser()
+  } catch (error: any) {
+    if (error?.message?.includes('Auth session missing') || 
+        error?.name === 'AuthSessionMissingError') {
+      console.log('ℹ️ No active session found')
+      return { data: { user: null }, error: null }
+    }
+    throw error
+  }
+}
+
+// Safe wrapper for getting session that handles session errors
+export async function safeGetSession() {
+  try {
+    return await supabase.auth.getSession()
+  } catch (error: any) {
+    if (error?.message?.includes('Auth session missing') || 
+        error?.name === 'AuthSessionMissingError') {
+      console.log('ℹ️ No active session found')
+      return { data: { session: null }, error: null }
+    }
+    throw error
+  }
+}
+
 export async function getCurrentUser(): Promise<AuthUser | null> {
   try {
-    const { data: { user }, error } = await supabase.auth.getUser()
+    const { data: { user }, error } = await safeGetUser()
     
     if (error) {
       console.error('❌ Get current user error:', error)
@@ -123,7 +151,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     }
 
     return user as AuthUser
-  } catch (catchError) {
+  } catch (catchError: any) {
     console.error('💥 Get current user catch error:', catchError)
     return null
   }
