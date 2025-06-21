@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, ShoppingCart, Heart, Share2, Star, Truck, Shield, RotateCcw, Plus, Minus, Check } from 'lucide-react'
 import { getProductById, formatPrice, calculateDiscount } from '@/lib/database'
 import { useCartStore } from '@/store/cart'
+import { useWishlistStore } from '@/store/wishlist'
 import type { Product } from '@/lib/supabase'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -18,10 +19,15 @@ export default function ProductDetailPage() {
   const [selectedColor, setSelectedColor] = useState<string>('')
   const [selectedImage, setSelectedImage] = useState<number>(0)
   const [quantity, setQuantity] = useState<number>(1)
-  const [isWishlisted, setIsWishlisted] = useState(false)
   const [showAddedToast, setShowAddedToast] = useState(false)
+  const [isClient, setIsClient] = useState(false)
 
   const { addItem } = useCartStore()
+  const { toggleItem, isInWishlist, isHydrated } = useWishlistStore()
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   useEffect(() => {
     async function fetchProduct() {
@@ -64,6 +70,13 @@ export default function ProductDetailPage() {
     handleAddToCart()
     router.push('/checkout')
   }
+
+  const handleWishlistToggle = () => {
+    if (!product) return
+    toggleItem(product)
+  }
+
+  const isProductInWishlist = isClient && isHydrated && product ? isInWishlist(product.id) : false
 
   if (loading) {
     return (
@@ -123,53 +136,58 @@ export default function ProductDetailPage() {
       )}
 
       <div className="container mx-auto px-4 py-8">
-        {/* Back Button */}
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-8"
-        >
-          <ArrowLeft className="h-5 w-5" />
-          Back to Products
-        </button>
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-2 text-sm text-gray-600 mb-8">
+          <Link href="/" className="hover:text-purple-600">Home</Link>
+          <span>/</span>
+          <Link href="/products" className="hover:text-purple-600">Products</Link>
+          <span>/</span>
+          <span className="text-gray-900">{product.name}</span>
+        </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Image Gallery */}
+          {/* Product Images */}
           <div className="space-y-4">
-            <div className="relative aspect-square rounded-lg overflow-hidden bg-white shadow-sm">
+            <div className="aspect-square relative bg-gray-100 rounded-lg overflow-hidden">
               <Image
                 src={product.images[selectedImage] || '/placeholder-product.jpg'}
                 alt={product.name}
                 fill
+                sizes="50vw"
                 className="object-cover"
+                priority
+                unoptimized={product.images[selectedImage]?.includes('unsplash.com')}
               />
               {product.featured && (
-                <span className="absolute top-4 left-4 bg-purple-600 text-white text-sm px-3 py-1 rounded">
+                <span className="absolute top-4 left-4 bg-purple-600 text-white text-sm px-3 py-1 rounded-full">
                   Featured
                 </span>
               )}
               {discount > 0 && (
-                <span className="absolute top-4 right-4 bg-red-500 text-white text-sm px-3 py-1 rounded">
+                <span className="absolute top-4 right-4 bg-red-500 text-white text-sm px-3 py-1 rounded-full">
                   -{discount}% OFF
                 </span>
               )}
             </div>
 
-            {/* Thumbnail Grid */}
+            {/* Thumbnail Images */}
             {product.images.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
                 {product.images.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`relative aspect-square rounded-lg overflow-hidden ${
-                      selectedImage === index ? 'ring-2 ring-purple-500' : ''
+                    className={`aspect-square relative bg-gray-100 rounded-lg overflow-hidden border-2 ${
+                      selectedImage === index ? 'border-purple-500' : 'border-transparent'
                     }`}
                   >
                     <Image
-                      src={image}
+                      src={image || '/placeholder-product.jpg'}
                       alt={`${product.name} ${index + 1}`}
                       fill
+                      sizes="25vw"
                       className="object-cover"
+                      unoptimized={image?.includes('unsplash.com')}
                     />
                   </button>
                 ))}
@@ -177,7 +195,7 @@ export default function ProductDetailPage() {
             )}
           </div>
 
-          {/* Product Details */}
+          {/* Product Info */}
           <div className="space-y-6">
             {/* Header */}
             <div>
@@ -185,12 +203,17 @@ export default function ProductDetailPage() {
                 <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setIsWishlisted(!isWishlisted)}
-                    className={`p-2 rounded-full ${isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                    onClick={handleWishlistToggle}
+                    className={`p-2 rounded-full transition-colors ${
+                      isProductInWishlist 
+                        ? 'text-red-500 bg-red-50' 
+                        : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+                    }`}
+                    title={isProductInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
                   >
-                    <Heart className={`h-6 w-6 ${isWishlisted ? 'fill-current' : ''}`} />
+                    <Heart className={`h-6 w-6 ${isProductInWishlist ? 'fill-current' : ''}`} />
                   </button>
-                  <button className="p-2 rounded-full text-gray-400 hover:text-gray-600">
+                  <button className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                     <Share2 className="h-6 w-6" />
                   </button>
                 </div>
@@ -233,7 +256,7 @@ export default function ProductDetailPage() {
 
             {/* Description */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Description</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Description</h3>
               <p className="text-gray-600 leading-relaxed">{product.description}</p>
             </div>
 
@@ -348,25 +371,35 @@ export default function ProductDetailPage() {
             {/* Specifications */}
             <div className="border-t border-gray-200 pt-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Specifications</h3>
-              <div className="space-y-2">
-                <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
                   <span className="text-gray-600">Category:</span>
-                  <span className="text-gray-900 capitalize">{product.category}</span>
+                  <span className="ml-2 font-medium">{product.category}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div>
                   <span className="text-gray-600">Gender:</span>
-                  <span className="text-gray-900 capitalize">{product.gender}</span>
+                  <span className="ml-2 font-medium capitalize">{product.gender}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div>
                   <span className="text-gray-600">Available Sizes:</span>
-                  <span className="text-gray-900">{product.sizes.join(', ')}</span>
+                  <span className="ml-2 font-medium">{product.sizes.join(', ')}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div>
                   <span className="text-gray-600">Available Colors:</span>
-                  <span className="text-gray-900">{product.colors.join(', ')}</span>
+                  <span className="ml-2 font-medium">{product.colors.join(', ')}</span>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Related Products Section */}
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">You might also like</h2>
+          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+            <p className="text-gray-600">
+              Related products will be displayed here based on category and tags.
+            </p>
           </div>
         </div>
       </div>
