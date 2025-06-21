@@ -78,3 +78,5 @@ dist/
 # Test files
 test-*.js
 *.test.js
+
+.vercel

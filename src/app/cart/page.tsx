@@ -53,7 +53,7 @@ export default function CartPage() {
     }, 300)
   }
 
-  const handleAddToWishlist = (product: any) => {
+  const handleAddToWishlist = (product: Product) => {
     toggleItem(product)
   }
 
