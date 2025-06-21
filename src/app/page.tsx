@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowRight, Code, Cpu, Zap, Shield, Truck, RefreshCw } from 'lucide-react'
+import NewsletterSubscription from '@/components/NewsletterSubscription'
 
 export default function HomePage() {
   const categories = [
@@ -219,6 +220,13 @@ export default function HomePage() {
               <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </div>
+        </div>
+      </section>
+
+      {/* Newsletter Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <NewsletterSubscription className="max-w-2xl mx-auto" />
         </div>
       </section>
 
