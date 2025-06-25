@@ -3,7 +3,7 @@ import "./globals.css";
 import Link from "next/link";
 import { Suspense } from 'react'
 import { AuthProvider } from '@/hooks/useAuth'
-import Header from '@/components/layout/header'
+import Header from '@/components/Header'
 import NavigationProgress from '@/components/NavigationProgress'
 import PageTransition from '@/components/PageTransition'
 import NewsletterSubscription from '@/components/NewsletterSubscription'

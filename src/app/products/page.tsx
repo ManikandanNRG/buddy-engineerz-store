@@ -226,7 +226,7 @@ function ProductsContent() {
               >
                 <option value="all">All Categories</option>
                 {categories.map((category) => (
-                  <option key={category.id} value={category.slug}>
+                  <option key={category.id} value={category.name.toLowerCase()}>
                     {category.name}
                   </option>
                 ))}
@@ -367,7 +367,7 @@ function ProductCard({
 }) {
   const [imageError, setImageError] = useState(false)
   const [isWishlisted, setIsWishlisted] = useState(false)
-  const discount = calculateDiscount(product.price, product.compare_at_price)
+  const discount = calculateDiscount(product.original_price || 0, product.price)
 
   const handleImageError = () => {
     setImageError(true)
@@ -379,9 +379,9 @@ function ProductCard({
         <div className="flex flex-col md:flex-row">
           <div className="md:w-1/3 relative">
             <Link href={`/products/${product.id}`}>
-              {!imageError ? (
+              {!imageError && product.images && product.images.length > 0 ? (
                 <Image
-                  src={product.image_url}
+                  src={product.images[0]}
                   alt={product.name}
                   width={300}
                   height={300}
@@ -433,9 +433,9 @@ function ProductCard({
                 <span className="text-lg font-bold text-gray-900">
                   {formatPrice(product.price)}
                 </span>
-                {product.compare_at_price && product.compare_at_price > product.price && (
+                {product.original_price && product.original_price > product.price && (
                   <span className="text-sm text-gray-500 line-through">
-                    {formatPrice(product.compare_at_price)}
+                    {formatPrice(product.original_price)}
                   </span>
                 )}
               </div>
@@ -457,9 +457,9 @@ function ProductCard({
     <div className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
       <div className="relative">
         <Link href={`/products/${product.id}`}>
-          {!imageError ? (
+          {!imageError && product.images && product.images.length > 0 ? (
             <Image
-              src={product.image_url}
+              src={product.images[0]}
               alt={product.name}
               width={300}
               height={300}
@@ -509,9 +509,9 @@ function ProductCard({
             <span className="text-lg font-bold text-gray-900">
               {formatPrice(product.price)}
             </span>
-            {product.compare_at_price && product.compare_at_price > product.price && (
+            {product.original_price && product.original_price > product.price && (
               <span className="text-sm text-gray-500 line-through">
-                {formatPrice(product.compare_at_price)}
+                {formatPrice(product.original_price)}
               </span>
             )}
           </div>
@@ -559,4 +559,4 @@ export default function ProductsPage() {
       <ProductsContent />
     </Suspense>
   )
-} 
+}
