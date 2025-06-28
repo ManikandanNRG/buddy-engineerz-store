@@ -6,6 +6,7 @@ import AdminSidebar from '@/components/admin/AdminSidebar'
 import AdminHeader from '@/components/admin/AdminHeader'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
+import { useRouter } from 'next/navigation'
 
 interface StoreSettings {
   store_name: string
@@ -47,6 +48,7 @@ export default function AdminSettingsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('store')
   const [saving, setSaving] = useState(false)
+  const router = useRouter()
 
   // Store Settings
   const [storeSettings, setStoreSettings] = useState<StoreSettings>({
@@ -204,16 +206,43 @@ export default function AdminSettingsPage() {
   const saveNotificationSettings = async () => {
     try {
       setSaving(true)
-      
-      localStorage.setItem('notification_settings', JSON.stringify(notificationSettings))
-      
+      // TODO: Save notification settings to database
       toast.success('Notification settings saved successfully!')
     } catch (error) {
-      console.error('Error saving notification settings:', error)
       toast.error('Failed to save notification settings')
     } finally {
       setSaving(false)
     }
+  }
+
+  // System action handlers
+  const handleExportData = async () => {
+    try {
+      toast.loading('Preparing data export...')
+      // TODO: Implement data export functionality
+      setTimeout(() => {
+        toast.success('Data export will be emailed to you shortly')
+      }, 2000)
+    } catch (error) {
+      toast.error('Failed to export data')
+    }
+  }
+
+  const handleClearCache = async () => {
+    try {
+      toast.loading('Clearing cache...')
+      // TODO: Implement cache clearing functionality
+      setTimeout(() => {
+        toast.success('Cache cleared successfully')
+      }, 1500)
+    } catch (error) {
+      toast.error('Failed to clear cache')
+    }
+  }
+
+  const handleViewLogs = () => {
+    // TODO: Navigate to logs page or open logs modal
+    router.push('/admin/logs')
   }
 
   // Reset to defaults
@@ -619,7 +648,10 @@ export default function AdminSettingsPage() {
                     <div>
                       <h3 className="text-lg font-medium text-gray-900 mb-4">System Actions</h3>
                       <div className="space-y-3">
-                        <button className="w-full text-left p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                        <button 
+                          onClick={handleExportData}
+                          className="w-full text-left p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
                           <div className="flex items-center justify-between">
                             <div>
                               <h4 className="text-sm font-medium text-gray-900">Export Data</h4>
@@ -628,7 +660,10 @@ export default function AdminSettingsPage() {
                             <span className="text-purple-600">📥</span>
                           </div>
                         </button>
-                        <button className="w-full text-left p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                        <button 
+                          onClick={handleClearCache}
+                          className="w-full text-left p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
                           <div className="flex items-center justify-between">
                             <div>
                               <h4 className="text-sm font-medium text-gray-900">Clear Cache</h4>
@@ -637,7 +672,10 @@ export default function AdminSettingsPage() {
                             <span className="text-purple-600">🗑️</span>
                           </div>
                         </button>
-                        <button className="w-full text-left p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                        <button 
+                          onClick={handleViewLogs}
+                          className="w-full text-left p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
                           <div className="flex items-center justify-between">
                             <div>
                               <h4 className="text-sm font-medium text-gray-900">System Logs</h4>

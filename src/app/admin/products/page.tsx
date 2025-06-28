@@ -42,6 +42,7 @@ export default function AdminProductsPage() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [hasInitialized, setHasInitialized] = useState(false)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -58,16 +59,18 @@ export default function AdminProductsPage() {
     tags: ''
   })
 
+  // Initialize data only once when user is available
   useEffect(() => {
-    if (user) {
+    if (user && !loading && !hasInitialized) {
+      console.log('🚀 Initializing products page...')
+      setHasInitialized(true)
       fetchProducts()
       fetchCategories()
     }
-  }, [user])
+  }, [user, loading, hasInitialized])
 
   const fetchProducts = async () => {
     try {
-      setProductsLoading(true)
       console.log('🔍 Fetching products...')
       
       const { data, error } = await supabase
@@ -78,7 +81,6 @@ export default function AdminProductsPage() {
       if (error) {
         console.error('❌ Products fetch error:', error)
         
-        // Handle specific error cases
         if (error.code === '42P01') {
           toast.error('Products table does not exist. Please run the database setup script.')
           setProducts([])
@@ -101,7 +103,7 @@ export default function AdminProductsPage() {
         toast.error('Failed to fetch products')
       }
       
-      setProducts([]) // Set empty array to prevent UI crashes
+      setProducts([])
     } finally {
       setProductsLoading(false)
     }
@@ -119,7 +121,6 @@ export default function AdminProductsPage() {
       if (error) {
         console.error('❌ Categories fetch error:', error)
         
-        // Handle missing categories table gracefully
         if (error.code === '42P01') {
           console.log('ℹ️ Categories table does not exist, using default categories')
           setCategories([
@@ -138,7 +139,6 @@ export default function AdminProductsPage() {
     } catch (error: any) {
       console.error('💥 Error fetching categories:', error)
       
-      // Fallback to default categories
       setCategories([
         { id: '1', name: 'T-Shirts', description: 'Engineering T-Shirts', image_url: '', created_at: '' },
         { id: '2', name: 'Hoodies', description: 'Engineering Hoodies', image_url: '', created_at: '' },
@@ -150,7 +150,6 @@ export default function AdminProductsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Prevent multiple submissions
     if (isSubmitting) {
       console.log('⏳ Already submitting, ignoring duplicate submission')
       return
@@ -204,47 +203,23 @@ export default function AdminProductsPage() {
         toast.success('Product updated successfully!')
       } else {
         console.log('➕ Creating new product...')
-        console.log('🔧 Supabase client check:', !!supabase)
-        console.log('🔧 Product data type check:', typeof productData, productData)
         
-        try {
-          console.log('🚀 Starting Supabase insert...')
-          const startTime = Date.now()
-          
-          const { data: insertedData, error } = await supabase
-            .from('products')
-            .insert(productData)
-            .select()
+        const { data: insertedData, error } = await supabase
+          .from('products')
+          .insert(productData)
+          .select()
 
-          const endTime = Date.now()
-          console.log(`⏱️ Insert took ${endTime - startTime}ms`)
-          console.log('🔍 Raw Supabase response:', { data: insertedData, error })
-
-          if (error) {
-            console.error('❌ Insert error:', error)
-            console.error('Error details:', {
-              message: error.message,
-              details: error.details,
-              hint: error.hint,
-              code: error.code
-            })
-            throw error
-          }
-          
-          if (!insertedData) {
-            console.error('❌ No data returned from insert')
-            throw new Error('Product was not created - no data returned')
-          }
-          
-          console.log('✅ Product created successfully!', insertedData)
-          toast.success('Product created successfully!')
-        } catch (insertError) {
-          console.error('💥 Caught insert error:', insertError)
-          console.error('💥 Error type:', typeof insertError)
-          console.error('💥 Error name:', (insertError as any)?.name)
-          console.error('💥 Error message:', (insertError as any)?.message)
-          throw insertError
+        if (error) {
+          console.error('❌ Insert error:', error)
+          throw error
         }
+        
+        if (!insertedData) {
+          throw new Error('Product was not created - no data returned')
+        }
+        
+        console.log('✅ Product created successfully!', insertedData)
+        toast.success('Product created successfully!')
       }
 
       console.log('🔄 Resetting form and refreshing products...')
@@ -693,4 +668,4 @@ export default function AdminProductsPage() {
       )}
     </div>
   )
-} 
+}

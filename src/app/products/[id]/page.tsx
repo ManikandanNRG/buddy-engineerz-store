@@ -35,17 +35,81 @@ export default function ProductDetailPage() {
       
       setLoading(true)
       try {
-        const { product: fetchedProduct, error } = await getProductById(params.id as string)
+        // Check if it's a featured product first
+        const featuredProducts = [
+          {
+            id: 'featured-1',
+            name: 'Algorithm Tee',
+            description: 'Premium cotton tee with minimalist algorithm design',
+            price: 999,
+            original_price: 1299,
+            images: ['https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop&crop=center'],
+            category: 'tshirts',
+            sizes: ['S', 'M', 'L', 'XL'],
+            colors: ['Black', 'White'],
+            stock: 10,
+            featured: true,
+            gender: 'unisex' as const,
+            tags: ['algorithm', 'coding', 'developer'],
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: 'featured-2',
+            name: 'Code Hoodie',
+            description: 'Comfortable hoodie perfect for coding sessions',
+            price: 1999,
+            original_price: 2499,
+            images: ['https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop&crop=center'],
+            category: 'hoodies',
+            sizes: ['S', 'M', 'L', 'XL'],
+            colors: ['Gray', 'Black'],
+            stock: 15,
+            featured: true,
+            gender: 'unisex' as const,
+            tags: ['coding', 'hoodie', 'comfortable'],
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: 'featured-3',
+            name: 'Binary Mug',
+            description: 'Start your day with binary coffee',
+            price: 599,
+            original_price: 799,
+            images: ['https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=400&fit=crop&crop=center'],
+            category: 'accessories',
+            sizes: ['One Size'],
+            colors: ['White'],
+            stock: 5,
+            featured: true,
+            gender: 'unisex' as const,
+            tags: ['binary', 'coffee', 'mug'],
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ]
+
+        const featuredProduct = featuredProducts.find(p => p.id === params.id)
         
-        if (error) {
-          console.error('Error fetching product:', error)
-          return
-        }
-        
-        if (fetchedProduct) {
-          setProduct(fetchedProduct)
-          setSelectedSize(fetchedProduct.sizes[0] || '')
-          setSelectedColor(fetchedProduct.colors[0] || '')
+        if (featuredProduct) {
+          setProduct(featuredProduct)
+          setSelectedSize(featuredProduct.sizes[0] || '')
+          setSelectedColor(featuredProduct.colors[0] || '')
+        } else {
+          // Try to fetch from database
+          const { product: fetchedProduct, error } = await getProductById(params.id as string)
+          
+          if (error) {
+            console.error('Error fetching product:', error)
+            return
+          }
+          
+          if (fetchedProduct) {
+            setProduct(fetchedProduct)
+            setSelectedSize(fetchedProduct.sizes[0] || '')
+            setSelectedColor(fetchedProduct.colors[0] || '')
+          }
         }
       } catch (error) {
         console.error('Error fetching product:', error)

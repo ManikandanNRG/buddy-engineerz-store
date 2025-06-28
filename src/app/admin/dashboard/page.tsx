@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useRequireAdminAuth } from '@/hooks/useAdminAuth'
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import AdminHeader from '@/components/admin/AdminHeader'
@@ -16,6 +17,7 @@ interface DashboardStats {
 
 export default function AdminDashboardPage() {
   const { user, loading } = useRequireAdminAuth()
+  const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [stats, setStats] = useState<DashboardStats>({
     totalOrders: 0,
@@ -67,6 +69,23 @@ export default function AdminDashboardPage() {
     } finally {
       setStatsLoading(false)
     }
+  }
+
+  // Quick action handlers
+  const handleAddProduct = () => {
+    router.push('/admin/products?action=add')
+  }
+
+  const handleViewOrders = () => {
+    router.push('/admin/orders')
+  }
+
+  const handleViewCustomers = () => {
+    router.push('/admin/customers')
+  }
+
+  const handleViewAnalytics = () => {
+    router.push('/admin/analytics')
   }
 
   if (loading) {
@@ -201,22 +220,34 @@ export default function AdminDashboardPage() {
                 </div>
                 <div className="p-6">
                   <div className="grid grid-cols-2 gap-4">
-                    <button className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors">
+                    <button 
+                      onClick={handleAddProduct}
+                      className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors cursor-pointer"
+                    >
                       <div className="text-2xl mb-2">➕</div>
                       <span className="text-sm font-medium text-gray-900">Add Product</span>
                     </button>
                     
-                    <button className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors">
+                    <button 
+                      onClick={handleViewOrders}
+                      className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors cursor-pointer"
+                    >
                       <div className="text-2xl mb-2">📋</div>
                       <span className="text-sm font-medium text-gray-900">View Orders</span>
                     </button>
                     
-                    <button className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors">
+                    <button 
+                      onClick={handleViewCustomers}
+                      className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors cursor-pointer"
+                    >
                       <div className="text-2xl mb-2">👥</div>
                       <span className="text-sm font-medium text-gray-900">Customers</span>
                     </button>
                     
-                    <button className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors">
+                    <button 
+                      onClick={handleViewAnalytics}
+                      className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors cursor-pointer"
+                    >
                       <div className="text-2xl mb-2">📊</div>
                       <span className="text-sm font-medium text-gray-900">Analytics</span>
                     </button>

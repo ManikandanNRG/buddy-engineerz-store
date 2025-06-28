@@ -43,28 +43,30 @@ export default function AdminOrdersPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [updating, setUpdating] = useState<string | null>(null)
 
-  // Optimized fetch with JOIN to reduce database calls
+  // Fetch orders with proper error handling
   const fetchOrders = useCallback(async () => {
     try {
       setOrdersLoading(true)
-      console.log('🔍 Fetching orders with optimized query...')
+      console.log('🔍 Fetching orders...')
       
-      // Single query with JOIN instead of multiple queries
+      // Try simple query first to avoid JOIN issues
       const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
-        .select(`
-          *,
-          user_profiles (
-            name
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
 
       if (ordersError) {
         console.error('❌ Orders query error:', ordersError)
         
+        // Handle specific error codes
         if (ordersError.code === '42P01') {
-          toast.error('Orders table does not exist. Please run the database setup script.')
+          toast.error('Orders table not found. Please check your database setup.')
+          setOrders([])
+          return
+        }
+        
+        if (ordersError.code === 'PGRST301') {
+          toast.error('Permission denied. Please check your RLS policies for orders table.')
           setOrders([])
           return
         }
@@ -73,18 +75,38 @@ export default function AdminOrdersPage() {
       }
 
       console.log('✅ Orders fetched:', ordersData?.length || 0)
-      setOrders(ordersData || [])
+      
+      // Process orders data to ensure proper format
+      const processedOrders = ordersData?.map(order => ({
+        ...order,
+        // Ensure items is parsed if it's a string
+        items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items,
+        // Ensure shipping_address is parsed if it's a string
+        shipping_address: typeof order.shipping_address === 'string' 
+          ? JSON.parse(order.shipping_address) 
+          : order.shipping_address,
+        // Add user_profiles placeholder if not present
+        user_profiles: order.user_profiles || { name: 'Unknown Customer' }
+      })) || []
+
+      setOrders(processedOrders)
     } catch (error: any) {
       console.error('💥 Error fetching orders:', error)
       
+      // Provide more specific error messages
       if (error?.code === '42P01') {
-        toast.error('Orders table does not exist. Please run the database setup script.')
+        toast.error('Orders table does not exist. Please check your database setup.')
+      } else if (error?.code === 'PGRST301') {
+        toast.error('Permission denied. Please check your RLS policies.')
       } else if (error?.code === 'PGRST116') {
         toast.error('Database connection issue. Please check your Supabase configuration.')
       } else if (error?.code === 'PGRST100') {
         toast.error('Database query syntax error. Please check your database setup.')
+      } else if (error?.message?.includes('JWT')) {
+        toast.error('Authentication error. Please check your Supabase configuration.')
       } else {
-        toast.error('Failed to fetch orders. Check console for details.')
+        console.log('💥 Database error occurred:', error.message)
+        toast.error(`Failed to fetch orders: ${error.message || 'Unknown error'}`)
       }
       
       setOrders([])
@@ -92,6 +114,8 @@ export default function AdminOrdersPage() {
       setOrdersLoading(false)
     }
   }, [])
+
+
 
   useEffect(() => {
     if (user) {

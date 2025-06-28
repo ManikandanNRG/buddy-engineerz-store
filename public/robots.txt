@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+
+# Block admin pages from search engines
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /_next/
+Disallow: /.next/
+
+# Allow specific important pages
+Allow: /products
+Allow: /about
+Allow: /contact
+Allow: /cart
+Allow: /checkout
+Allow: /sale
+Allow: /wishlist
+
+# Sitemap location
+Sitemap: https://buddyengineerz.com/sitemap.xml
+
+# Crawl delay (optional)
+Crawl-delay: 1 

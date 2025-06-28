@@ -7,10 +7,47 @@ import Header from '@/components/Header'
 import NavigationProgress from '@/components/NavigationProgress'
 import PageTransition from '@/components/PageTransition'
 import NewsletterSubscription from '@/components/NewsletterSubscription'
+import { Toaster } from 'react-hot-toast'
 
 export const metadata: Metadata = {
-  title: "Buddy Engineerz - Engineering Fashion",
-  description: "Premium engineering-themed apparel for developers and tech enthusiasts",
+  title: "Buddy Engineerz - Premium Engineering Fashion & Tech Apparel",
+  description: "Discover premium engineering-themed apparel, tech hoodies, developer t-shirts, and accessories designed for engineers, programmers, and tech enthusiasts. Shop the latest engineering fashion trends.",
+  keywords: "engineering fashion, tech apparel, developer clothing, programmer t-shirts, engineering hoodies, tech accessories, buddy engineerz, coding shirts, software engineer clothing",
+  authors: [{ name: "Buddy Engineerz" }],
+  creator: "Buddy Engineerz",
+  publisher: "Buddy Engineerz",
+  robots: "index, follow",
+  metadataBase: new URL('https://buddyengineerz.in'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: "Buddy Engineerz - Premium Engineering Fashion & Tech Apparel",
+    description: "Discover premium engineering-themed apparel, tech hoodies, developer t-shirts, and accessories designed for engineers, programmers, and tech enthusiasts.",
+    url: 'https://buddyengineerz.in',
+    siteName: 'Buddy Engineerz',
+    images: [
+      {
+        url: '/images/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Buddy Engineerz - Engineering Fashion',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Buddy Engineerz - Premium Engineering Fashion & Tech Apparel",
+    description: "Discover premium engineering-themed apparel, tech hoodies, developer t-shirts, and accessories designed for engineers, programmers, and tech enthusiasts.",
+    images: ['/images/twitter-card.jpg'],
+    creator: '@buddyengineerz',
+  },
+  verification: {
+    google: 'your-google-verification-code-here',
+  },
+  category: 'fashion',
 };
 
 export default function RootLayout({
@@ -20,6 +57,72 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Additional SEO Meta Tags */}
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#8b5cf6" />
+        <meta name="application-name" content="Buddy Engineerz" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Buddy Engineerz" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        
+        {/* Structured Data for Search Engines */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Buddy Engineerz",
+              "description": "Premium engineering-themed apparel for developers and tech enthusiasts",
+                             "url": "https://buddyengineerz.in",
+               "logo": "https://buddyengineerz.in/images/logo.png",
+              "sameAs": [
+                "https://twitter.com/buddyengineerz",
+                "https://instagram.com/buddyengineerz",
+                "https://linkedin.com/company/buddyengineerz",
+                "https://github.com/buddyengineerz"
+              ],
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "telephone": "+1-XXX-XXX-XXXX",
+                "contactType": "customer service",
+                "availableLanguage": "English"
+              },
+              "address": {
+                "@type": "PostalAddress",
+                "addressCountry": "IN"
+              }
+            })
+          }}
+        />
+        
+        {/* E-commerce Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "Buddy Engineerz",
+                             "url": "https://buddyengineerz.in",
+               "description": "Premium engineering-themed apparel for developers and tech enthusiasts",
+               "potentialAction": {
+                 "@type": "SearchAction",
+                 "target": "https://buddyengineerz.in/products?search={search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
+            })
+          }}
+        />
+        
+        {/* Favicon and Icons */}
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.json" />
+      </head>
       <body
         className="antialiased font-sans"
         suppressHydrationWarning={true}
@@ -35,7 +138,26 @@ export default function RootLayout({
           <main className="min-h-screen">
             {children}
           </main>
+          <Toaster 
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#363636',
+                color: '#fff',
+              },
+              success: {
+                duration: 3000,
+                iconTheme: {
+                  primary: '#4ade80',
+                  secondary: '#fff',
+                },
+              },
+            }}
+          />
         </AuthProvider>
+        
+        {/* Footer */}
         <footer className="bg-gray-900 text-white">
           <div className="container mx-auto px-4 py-12">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
