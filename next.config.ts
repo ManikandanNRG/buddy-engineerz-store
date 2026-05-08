@@ -1,3 +1,4 @@
+// Build: 2026-05-08 force-fresh-env
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
