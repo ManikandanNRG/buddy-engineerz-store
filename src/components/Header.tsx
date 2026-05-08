@@ -127,6 +127,9 @@ export default function Header() {
             <Link href="/products" className="text-gray-700 hover:text-purple-600 transition-colors">
               Products
             </Link>
+            <Link href="/blog" className="text-gray-700 hover:text-purple-600 transition-colors">
+              Blog
+            </Link>
             <Link href="/about" className="text-gray-700 hover:text-purple-600 transition-colors">
               About
             </Link>
@@ -196,6 +199,13 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Products
+              </Link>
+              <Link 
+                href="/blog" 
+                className="block text-gray-700 hover:text-purple-600 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Blog
               </Link>
               <Link 
                 href="/about" 

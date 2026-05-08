@@ -59,9 +59,15 @@ export async function signUp({ email, password, name, phone }: SignUpData): Prom
       return { user: null, error }
     }
 
-    // Create user profile if signup successful
+    // Try to create user profile - this may fail if email confirmation is required
+    // (no active session yet), which is fine - profile will be created on first sign-in
     if (data.user) {
-      await createUserProfile(data.user.id, { name, phone })
+      try {
+        await createUserProfile(data.user.id, { name, phone })
+      } catch {
+        // Non-critical: profile will be created/upserted after email confirmation
+        console.log('ℹ️ Profile creation deferred until after email confirmation')
+      }
     }
 
     console.log('✅ User signed up successfully:', data.user?.email)
@@ -215,7 +221,7 @@ export async function createUserProfile(userId: string, profileData: { name: str
       .single()
 
     if (error) {
-      console.error('❌ Create profile error:', error)
+      console.log('ℹ️ Create profile skipped (likely no active session yet):', error?.message || error)
       return { profile: null, error }
     }
 

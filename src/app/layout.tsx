@@ -67,6 +67,11 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Buddy Engineerz" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="author" content="Buddy Engineerz" />
+        <meta name="publisher" content="Buddy Engineerz" />
+        <meta name="robots" content="index, follow" />
+        <meta name="google-site-verification" content="ADD_YOUR_GOOGLE_VERIFICATION_CODE_HERE" />
+        <meta name="msvalidate.01" content="ADD_YOUR_BING_VERIFICATION_CODE_HERE" />
         
         {/* Structured Data for Search Engines */}
         <script
@@ -122,6 +127,18 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
+        {/* Add Google Analytics */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'GA_MEASUREMENT_ID');
+            `,
+          }}
+        />
       </head>
       <body
         className="antialiased font-sans"
