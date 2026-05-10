@@ -6,6 +6,10 @@ import AdminSidebar from '@/components/admin/AdminSidebar'
 import AdminHeader from '@/components/admin/AdminHeader'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend, BarChart, Bar
+} from 'recharts'
 
 interface AnalyticsData {
   totalRevenue: number
@@ -15,11 +19,9 @@ interface AnalyticsData {
   averageOrderValue: number
   conversionRate: number
   topProducts: ProductStat[]
-  topCategories: CategoryStat[]
   revenueByMonth: MonthlyRevenue[]
   ordersByStatus: OrderStatus[]
   customerGrowth: CustomerGrowth[]
-  recentActivity: Activity[]
 }
 
 interface ProductStat {
@@ -27,14 +29,6 @@ interface ProductStat {
   name: string
   sales: number
   revenue: number
-  orders: number
-}
-
-interface CategoryStat {
-  name: string
-  sales: number
-  revenue: number
-  percentage: number
 }
 
 interface MonthlyRevenue {
@@ -44,23 +38,21 @@ interface MonthlyRevenue {
 }
 
 interface OrderStatus {
-  status: string
-  count: number
-  percentage: number
+  name: string // changed to name for recharts pie
+  value: number // changed to value for recharts pie
 }
 
 interface CustomerGrowth {
   month: string
   newCustomers: number
-  totalCustomers: number
 }
 
-interface Activity {
-  id: string
-  type: 'order' | 'customer' | 'product'
-  description: string
-  timestamp: string
-  amount?: number
+const PIE_COLORS = {
+  'pending': '#eab308', // yellow
+  'confirmed': '#3b82f6', // blue
+  'shipped': '#6366f1', // indigo
+  'delivered': '#22c55e', // green
+  'cancelled': '#ef4444', // red
 }
 
 export default function AdminAnalyticsPage() {
@@ -85,8 +77,7 @@ export default function AdminAnalyticsPage() {
       const [
         ordersResult,
         customersResult,
-        productsResult,
-        categoriesResult
+        productsResult
       ] = await Promise.all([
         supabase
           .from('orders')
@@ -97,84 +88,69 @@ export default function AdminAnalyticsPage() {
           .select('*'),
         supabase
           .from('products')
-          .select('*'),
-        supabase
-          .from('categories')
-          .select('*')
+          .select('id, name') // We just need total count, but fetching all for accurate count
       ])
-
-      // Handle errors
-      if (ordersResult.error) {
-        console.warn('⚠️ Orders data not available:', ordersResult.error)
-      }
-      if (customersResult.error) {
-        console.warn('⚠️ Customers data not available:', customersResult.error)
-      }
-      if (productsResult.error) {
-        console.warn('⚠️ Products data not available:', productsResult.error)
-      }
-      if (categoriesResult.error) {
-        console.warn('⚠️ Categories data not available:', categoriesResult.error)
-      }
 
       const orders = ordersResult.data || []
       const customers = customersResult.data || []
       const products = productsResult.data || []
-      const categories = categoriesResult.data || []
 
       // Calculate analytics
-      const analytics = calculateAnalytics(orders, customers, products, categories)
+      const analytics = calculateAnalytics(orders, customers, products)
       setAnalyticsData(analytics)
 
-      console.log('✅ Analytics data processed:', analytics)
+      console.log('✅ Analytics data processed')
     } catch (error: any) {
       console.error('💥 Error fetching analytics:', error)
       toast.error('Failed to fetch analytics data')
-      
-      // Set fallback data
-      setAnalyticsData(getFallbackAnalytics())
     } finally {
       setAnalyticsLoading(false)
     }
   }, [dateRange])
 
   // Calculate analytics from raw data
-  const calculateAnalytics = (orders: any[], customers: any[], products: any[], categories: any[]): AnalyticsData => {
+  const calculateAnalytics = (orders: any[], customers: any[], products: any[]): AnalyticsData => {
     // Basic metrics
-    const totalRevenue = orders.reduce((sum, order) => sum + (order.total || 0), 0)
+    const nonCancelledOrders = orders.filter(o => o.status !== 'cancelled')
+    const totalRevenue = nonCancelledOrders.reduce((sum, order) => sum + (order.total || 0), 0)
     const totalOrders = orders.length
     const totalCustomers = customers.length
     const totalProducts = products.length
-    const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0
+    const averageOrderValue = nonCancelledOrders.length > 0 ? totalRevenue / nonCancelledOrders.length : 0
 
-    // Top products (mock calculation - would need order items data)
-    const topProducts: ProductStat[] = products.slice(0, 5).map((product, index) => ({
-      id: product.id,
-      name: product.name,
-      sales: Math.floor(Math.random() * 100) + 20,
-      revenue: Math.floor(Math.random() * 50000) + 10000,
-      orders: Math.floor(Math.random() * 50) + 10
-    }))
-
-    // Top categories
-    const topCategories: CategoryStat[] = categories.map((category, index) => {
-      const revenue = Math.floor(Math.random() * 100000) + 20000
-      return {
-        name: category.name,
-        sales: Math.floor(Math.random() * 200) + 50,
-        revenue,
-        percentage: Math.floor(Math.random() * 30) + 10
-      }
+    // Top selling products calculated directly from JSON items in orders
+    const productSalesMap: Record<string, { name: string, sales: number, revenue: number }> = {}
+    
+    orders.forEach(order => {
+      if (order.status === 'cancelled') return
+      const items = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || [])
+      items.forEach((item: any) => {
+        const prodId = item.product?.id || item.id || 'unknown'
+        const prodName = item.product?.name || item.name || 'Unknown Product'
+        const qty = item.quantity || 1
+        const price = item.price || item.product?.price || 0
+        
+        if (!productSalesMap[prodId]) {
+          productSalesMap[prodId] = { name: prodName, sales: 0, revenue: 0 }
+        }
+        productSalesMap[prodId].sales += qty
+        productSalesMap[prodId].revenue += (qty * price)
+      })
     })
 
-    // Revenue by month (last 6 months)
+    const topProducts = Object.entries(productSalesMap)
+      .map(([id, data]) => ({ id, ...data }))
+      .sort((a, b) => b.sales - a.sales)
+      .slice(0, 5)
+
+    // Revenue by month (last 6 months) for Line Chart
     const revenueByMonth: MonthlyRevenue[] = []
     for (let i = 5; i >= 0; i--) {
       const date = new Date()
       date.setMonth(date.getMonth() - i)
-      const monthName = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+      const monthName = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
       
-      const monthOrders = orders.filter(order => {
+      const monthOrders = nonCancelledOrders.filter(order => {
         const orderDate = new Date(order.created_at)
         return orderDate.getMonth() === date.getMonth() && orderDate.getFullYear() === date.getFullYear()
       })
@@ -186,19 +162,18 @@ export default function AdminAnalyticsPage() {
       })
     }
 
-    // Orders by status
+    // Orders by status for Pie Chart
     const statusCounts: { [key: string]: number } = {}
     orders.forEach(order => {
       statusCounts[order.status] = (statusCounts[order.status] || 0) + 1
     })
 
     const ordersByStatus: OrderStatus[] = Object.entries(statusCounts).map(([status, count]) => ({
-      status,
-      count,
-      percentage: totalOrders > 0 ? (count / totalOrders) * 100 : 0
+      name: status,
+      value: count
     }))
 
-    // Customer growth (last 6 months)
+    // Customer growth (last 6 months) for Bar Chart
     const customerGrowth: CustomerGrowth[] = []
     for (let i = 5; i >= 0; i--) {
       const date = new Date()
@@ -212,27 +187,9 @@ export default function AdminAnalyticsPage() {
       
       customerGrowth.push({
         month: monthName,
-        newCustomers: newCustomersThisMonth,
-        totalCustomers: customers.filter(customer => new Date(customer.created_at) <= date).length
+        newCustomers: newCustomersThisMonth
       })
     }
-
-    // Recent activity
-    const recentActivity: Activity[] = [
-      ...orders.slice(0, 5).map(order => ({
-        id: order.id,
-        type: 'order' as const,
-        description: `New order #${order.order_number}`,
-        timestamp: order.created_at,
-        amount: order.total
-      })),
-      ...customers.slice(0, 3).map(customer => ({
-        id: customer.id,
-        type: 'customer' as const,
-        description: `New customer: ${customer.name || customer.email}`,
-        timestamp: customer.created_at
-      }))
-    ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 10)
 
     return {
       totalRevenue,
@@ -240,31 +197,13 @@ export default function AdminAnalyticsPage() {
       totalCustomers,
       totalProducts,
       averageOrderValue,
-      conversionRate: Math.random() * 5 + 2, // Mock conversion rate
+      conversionRate: 2.4, // Since no page views tracked, keeping static mock
       topProducts,
-      topCategories,
       revenueByMonth,
       ordersByStatus,
-      customerGrowth,
-      recentActivity
+      customerGrowth
     }
   }
-
-  // Fallback analytics data
-  const getFallbackAnalytics = (): AnalyticsData => ({
-    totalRevenue: 0,
-    totalOrders: 0,
-    totalCustomers: 0,
-    totalProducts: 0,
-    averageOrderValue: 0,
-    conversionRate: 0,
-    topProducts: [],
-    topCategories: [],
-    revenueByMonth: [],
-    ordersByStatus: [],
-    customerGrowth: [],
-    recentActivity: []
-  })
 
   useEffect(() => {
     if (user) {
@@ -272,7 +211,6 @@ export default function AdminAnalyticsPage() {
     }
   }, [user, fetchAnalytics])
 
-  // Refresh analytics
   const handleRefresh = async () => {
     setRefreshing(true)
     await fetchAnalytics()
@@ -280,18 +218,7 @@ export default function AdminAnalyticsPage() {
     toast.success('Analytics refreshed!')
   }
 
-  // Format currency
   const formatCurrency = (amount: number) => `₹${amount.toLocaleString()}`
-
-  // Format percentage
-  const formatPercentage = (value: number) => `${value.toFixed(1)}%`
-
-  // Get growth indicator
-  const getGrowthIndicator = (current: number, previous: number) => {
-    if (previous === 0) return { value: 0, isPositive: true }
-    const growth = ((current - previous) / previous) * 100
-    return { value: Math.abs(growth), isPositive: growth >= 0 }
-  }
 
   if (loading) {
     return (
@@ -355,84 +282,55 @@ export default function AdminAnalyticsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <div className="flex items-center">
-                      <div className="bg-green-500 p-3 rounded-lg">
-                        <span className="text-white text-xl">💰</span>
-                      </div>
+                      <div className="bg-green-500 p-3 rounded-lg"><span className="text-white text-xl">💰</span></div>
                       <div className="ml-4 flex-1">
                         <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                        <p className="text-2xl font-semibold text-gray-900">
-                          {formatCurrency(analyticsData.totalRevenue)}
-                        </p>
+                        <p className="text-2xl font-semibold text-gray-900">{formatCurrency(analyticsData.totalRevenue)}</p>
                       </div>
                     </div>
                   </div>
-
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <div className="flex items-center">
-                      <div className="bg-blue-500 p-3 rounded-lg">
-                        <span className="text-white text-xl">📋</span>
-                      </div>
+                      <div className="bg-blue-500 p-3 rounded-lg"><span className="text-white text-xl">📋</span></div>
                       <div className="ml-4 flex-1">
                         <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                        <p className="text-2xl font-semibold text-gray-900">
-                          {analyticsData.totalOrders.toLocaleString()}
-                        </p>
+                        <p className="text-2xl font-semibold text-gray-900">{analyticsData.totalOrders.toLocaleString()}</p>
                       </div>
                     </div>
                   </div>
-
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <div className="flex items-center">
-                      <div className="bg-purple-500 p-3 rounded-lg">
-                        <span className="text-white text-xl">👥</span>
-                      </div>
+                      <div className="bg-purple-500 p-3 rounded-lg"><span className="text-white text-xl">👥</span></div>
                       <div className="ml-4 flex-1">
                         <p className="text-sm font-medium text-gray-600">Total Customers</p>
-                        <p className="text-2xl font-semibold text-gray-900">
-                          {analyticsData.totalCustomers.toLocaleString()}
-                        </p>
+                        <p className="text-2xl font-semibold text-gray-900">{analyticsData.totalCustomers.toLocaleString()}</p>
                       </div>
                     </div>
                   </div>
-
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <div className="flex items-center">
-                      <div className="bg-orange-500 p-3 rounded-lg">
-                        <span className="text-white text-xl">📦</span>
-                      </div>
+                      <div className="bg-orange-500 p-3 rounded-lg"><span className="text-white text-xl">📦</span></div>
                       <div className="ml-4 flex-1">
                         <p className="text-sm font-medium text-gray-600">Total Products</p>
-                        <p className="text-2xl font-semibold text-gray-900">
-                          {analyticsData.totalProducts.toLocaleString()}
-                        </p>
+                        <p className="text-2xl font-semibold text-gray-900">{analyticsData.totalProducts.toLocaleString()}</p>
                       </div>
                     </div>
                   </div>
-
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <div className="flex items-center">
-                      <div className="bg-indigo-500 p-3 rounded-lg">
-                        <span className="text-white text-xl">💳</span>
-                      </div>
+                      <div className="bg-indigo-500 p-3 rounded-lg"><span className="text-white text-xl">💳</span></div>
                       <div className="ml-4 flex-1">
                         <p className="text-sm font-medium text-gray-600">Avg Order Value</p>
-                        <p className="text-2xl font-semibold text-gray-900">
-                          {formatCurrency(analyticsData.averageOrderValue)}
-                        </p>
+                        <p className="text-2xl font-semibold text-gray-900">{formatCurrency(analyticsData.averageOrderValue)}</p>
                       </div>
                     </div>
                   </div>
-
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <div className="flex items-center">
-                      <div className="bg-pink-500 p-3 rounded-lg">
-                        <span className="text-white text-xl">📈</span>
-                      </div>
+                      <div className="bg-pink-500 p-3 rounded-lg"><span className="text-white text-xl">📈</span></div>
                       <div className="ml-4 flex-1">
                         <p className="text-sm font-medium text-gray-600">Conversion Rate</p>
-                        <p className="text-2xl font-semibold text-gray-900">
-                          {formatPercentage(analyticsData.conversionRate)}
-                        </p>
+                        <p className="text-2xl font-semibold text-gray-900">{analyticsData.conversionRate}%</p>
                       </div>
                     </div>
                   </div>
@@ -440,173 +338,121 @@ export default function AdminAnalyticsPage() {
 
                 {/* Charts Row */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Revenue Chart */}
+                  {/* Revenue Chart (Recharts) */}
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Revenue Trend</h3>
-                    <div className="space-y-3">
-                      {analyticsData.revenueByMonth.map((month, index) => (
-                        <div key={month.month} className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">{month.month}</span>
-                          <div className="flex items-center space-x-3">
-                            <div className="w-32 bg-gray-200 rounded-full h-2">
-                              <div 
-                                className="bg-green-500 h-2 rounded-full" 
-                                style={{ 
-                                  width: `${Math.max(5, (month.revenue / Math.max(...analyticsData.revenueByMonth.map(m => m.revenue))) * 100)}%` 
-                                }}
-                              ></div>
-                            </div>
-                            <span className="text-sm font-medium text-gray-900 w-20 text-right">
-                              {formatCurrency(month.revenue)}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Revenue Trend (Last 6 Months)</h3>
+                    <div className="h-72 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={analyticsData.revenueByMonth} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                          <XAxis dataKey="month" stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
+                          <YAxis 
+                            stroke="#6b7280" 
+                            fontSize={12} 
+                            tickLine={false} 
+                            axisLine={false} 
+                            tickFormatter={(value) => `₹${value}`} 
+                          />
+                          <Tooltip 
+                            formatter={(value: number) => [`₹${value}`, 'Revenue']}
+                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                          />
+                          <Line type="monotone" dataKey="revenue" stroke="#22c55e" strokeWidth={3} dot={{ r: 4, fill: '#22c55e', strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                        </LineChart>
+                      </ResponsiveContainer>
                     </div>
                   </div>
 
-                  {/* Order Status Chart */}
+                  {/* Order Status Chart (Recharts Pie) */}
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Order Status Distribution</h3>
-                    <div className="space-y-3">
-                      {analyticsData.ordersByStatus.map((status) => {
-                        const colors = {
-                          pending: 'bg-yellow-500',
-                          confirmed: 'bg-blue-500',
-                          shipped: 'bg-indigo-500',
-                          delivered: 'bg-green-500',
-                          cancelled: 'bg-red-500'
-                        }
-                        const color = colors[status.status as keyof typeof colors] || 'bg-gray-500'
-                        
-                        return (
-                          <div key={status.status} className="flex items-center justify-between">
-                            <span className="text-sm text-gray-600 capitalize">{status.status}</span>
-                            <div className="flex items-center space-x-3">
-                              <div className="w-32 bg-gray-200 rounded-full h-2">
-                                <div 
-                                  className={`${color} h-2 rounded-full`}
-                                  style={{ width: `${Math.max(5, status.percentage)}%` }}
-                                ></div>
-                              </div>
-                              <span className="text-sm font-medium text-gray-900 w-16 text-right">
-                                {status.count}
-                              </span>
-                            </div>
-                          </div>
-                        )
-                      })}
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Orders by Status</h3>
+                    <div className="h-72 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={analyticsData.ordersByStatus}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                            nameKey="name"
+                            label={(entry) => entry.name}
+                          >
+                            {analyticsData.ordersByStatus.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={PIE_COLORS[entry.name as keyof typeof PIE_COLORS] || '#9ca3af'} />
+                            ))}
+                          </Pie>
+                          <Tooltip 
+                            formatter={(value: number) => [value, 'Orders']}
+                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                          />
+                          <Legend className="capitalize" />
+                        </PieChart>
+                      </ResponsiveContainer>
                     </div>
                   </div>
                 </div>
 
-                {/* Top Products and Categories */}
+                {/* Top Products and Customer Growth */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Top Products */}
+                  
+                  {/* Top Selling Products Table */}
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Top Products</h3>
-                    <div className="space-y-3">
-                      {analyticsData.topProducts.map((product, index) => (
-                        <div key={product.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <div className="bg-purple-100 text-purple-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium">
-                              {index + 1}
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-900">{product.name}</p>
-                              <p className="text-xs text-gray-500">{product.orders} orders</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm font-medium text-gray-900">{formatCurrency(product.revenue)}</p>
-                            <p className="text-xs text-gray-500">{product.sales} units</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Top Categories */}
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Top Categories</h3>
-                    <div className="space-y-3">
-                      {analyticsData.topCategories.map((category, index) => (
-                        <div key={category.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <div className="bg-blue-100 text-blue-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium">
-                              {index + 1}
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-900">{category.name}</p>
-                              <p className="text-xs text-gray-500">{category.sales} sales</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm font-medium text-gray-900">{formatCurrency(category.revenue)}</p>
-                            <p className="text-xs text-gray-500">{formatPercentage(category.percentage)}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Customer Growth and Recent Activity */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Customer Growth */}
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Customer Growth</h3>
-                    <div className="space-y-3">
-                      {analyticsData.customerGrowth.map((month) => (
-                        <div key={month.month} className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">{month.month}</span>
-                          <div className="flex items-center space-x-3">
-                            <div className="w-32 bg-gray-200 rounded-full h-2">
-                              <div 
-                                className="bg-purple-500 h-2 rounded-full" 
-                                style={{ 
-                                  width: `${Math.max(5, (month.newCustomers / Math.max(...analyticsData.customerGrowth.map(m => m.newCustomers))) * 100)}%` 
-                                }}
-                              ></div>
-                            </div>
-                            <span className="text-sm font-medium text-gray-900 w-16 text-right">
-                              +{month.newCustomers}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Recent Activity */}
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h3>
-                    <div className="space-y-3">
-                      {analyticsData.recentActivity.map((activity) => (
-                        <div key={activity.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                          <div className="flex-shrink-0">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm ${
-                              activity.type === 'order' ? 'bg-green-500' :
-                              activity.type === 'customer' ? 'bg-blue-500' : 'bg-purple-500'
-                            }`}>
-                              {activity.type === 'order' ? '📋' : activity.type === 'customer' ? '👤' : '📦'}
-                            </div>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm text-gray-900">{activity.description}</p>
-                            <p className="text-xs text-gray-500">
-                              {new Date(activity.timestamp).toLocaleDateString()}
-                            </p>
-                          </div>
-                          {activity.amount && (
-                            <div className="text-sm font-medium text-gray-900">
-                              {formatCurrency(activity.amount)}
-                            </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Top Selling Products</h3>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead>
+                          <tr>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                            <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Units Sold</th>
+                            <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Revenue</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {analyticsData.topProducts.map((product, index) => (
+                            <tr key={product.id} className="hover:bg-gray-50">
+                              <td className="px-4 py-3 text-sm text-gray-900 font-medium">
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-gray-400 font-bold">#{index + 1}</span>
+                                  <span>{product.name}</span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-500 text-right">{product.sales}</td>
+                              <td className="px-4 py-3 text-sm text-green-600 font-medium text-right">{formatCurrency(product.revenue)}</td>
+                            </tr>
+                          ))}
+                          {analyticsData.topProducts.length === 0 && (
+                            <tr>
+                              <td colSpan={3} className="px-4 py-4 text-center text-sm text-gray-500">No product sales yet.</td>
+                            </tr>
                           )}
-                        </div>
-                      ))}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
+
+                  {/* Customer Growth Bar Chart */}
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">New Customers</h3>
+                    <div className="h-72 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={analyticsData.customerGrowth} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                          <XAxis dataKey="month" stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
+                          <YAxis stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+                          <Tooltip 
+                            formatter={(value: number) => [value, 'New Customers']}
+                            cursor={{ fill: '#f3f4f6' }}
+                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                          />
+                          <Bar dataKey="newCustomers" fill="#a855f7" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
                 </div>
               </div>
             ) : (
@@ -619,4 +465,4 @@ export default function AdminAnalyticsPage() {
       </div>
     </div>
   )
-} 
+}

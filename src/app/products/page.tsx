@@ -19,10 +19,14 @@ function ProductsContent() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedGender, setSelectedGender] = useState<string>('all')
+  const [selectedSize, setSelectedSize] = useState<string>('all')
+  const [selectedColor, setSelectedColor] = useState<string>('all')
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000])
   const [sortBy, setSortBy] = useState<string>('newest')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showFilters, setShowFilters] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const productsPerPage = 12
 
   const { addItem } = useCartStore()
 
@@ -31,10 +35,14 @@ function ProductsContent() {
     const urlSearch = searchParams.get('search')
     const urlCategory = searchParams.get('category')
     const urlGender = searchParams.get('gender')
+    const urlSize = searchParams.get('size')
+    const urlColor = searchParams.get('color')
     
     if (urlSearch) setSearchTerm(urlSearch)
     if (urlCategory) setSelectedCategory(urlCategory)
     if (urlGender) setSelectedGender(urlGender)
+    if (urlSize) setSelectedSize(urlSize)
+    if (urlColor) setSelectedColor(urlColor)
   }, [searchParams])
 
   useEffect(() => {
@@ -97,6 +105,16 @@ function ProductsContent() {
       filtered = filtered.filter(product => product.gender === selectedGender)
     }
 
+    // Filter by size
+    if (selectedSize !== 'all') {
+      filtered = filtered.filter(product => product.sizes.includes(selectedSize))
+    }
+
+    // Filter by color
+    if (selectedColor !== 'all') {
+      filtered = filtered.filter(product => product.colors.includes(selectedColor))
+    }
+
     // Filter by price range
     filtered = filtered.filter(product => 
       product.price >= priceRange[0] && product.price <= priceRange[1]
@@ -118,7 +136,8 @@ function ProductsContent() {
     })
 
     setFilteredProducts(filtered)
-  }, [products, searchTerm, selectedCategory, selectedGender, priceRange, sortBy])
+    setCurrentPage(1) // Reset to first page when filters change
+  }, [products, searchTerm, selectedCategory, selectedGender, selectedSize, selectedColor, priceRange, sortBy])
 
   const handleAddToCart = (product: Product) => {
     const defaultSize = product.sizes[0] || 'M'
@@ -130,6 +149,8 @@ function ProductsContent() {
     setSearchTerm('')
     setSelectedCategory('all')
     setSelectedGender('all')
+    setSelectedSize('all')
+    setSelectedColor('all')
     const prices = products.map(p => p.price)
     setPriceRange([Math.min(...prices), Math.max(...prices)])
   }
@@ -138,7 +159,20 @@ function ProductsContent() {
     searchTerm,
     selectedCategory !== 'all' ? selectedCategory : null,
     selectedGender !== 'all' ? selectedGender : null,
+    selectedSize !== 'all' ? selectedSize : null,
+    selectedColor !== 'all' ? selectedColor : null,
   ].filter(Boolean).length
+
+  // Pagination logic
+  const indexOfLastProduct = currentPage * productsPerPage
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage
+  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct)
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage)
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   if (loading) {
     return (
@@ -244,6 +278,34 @@ function ProductsContent() {
                 <option value="women">Women</option>
               </select>
 
+              {/* Size Filter */}
+              <select
+                value={selectedSize}
+                onChange={(e) => setSelectedSize(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+              >
+                <option value="all">All Sizes</option>
+                <option value="XS">XS</option>
+                <option value="S">S</option>
+                <option value="M">M</option>
+                <option value="L">L</option>
+                <option value="XL">XL</option>
+                <option value="XXL">XXL</option>
+                <option value="One Size">One Size</option>
+              </select>
+
+              {/* Color Filter */}
+              <select
+                value={selectedColor}
+                onChange={(e) => setSelectedColor(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 max-w-[150px]"
+              >
+                <option value="all">All Colors</option>
+                {Array.from(new Set(products.flatMap(p => p.colors))).map(color => (
+                  <option key={color} value={color}>{color}</option>
+                ))}
+              </select>
+
               {/* Price Range */}
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-600">Price:</span>
@@ -332,21 +394,58 @@ function ProductsContent() {
             </button>
           </div>
         ) : (
-          <div className={`grid gap-6 ${
-            viewMode === 'grid' 
-              ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
-              : 'grid-cols-1'
-          }`}>
-            {filteredProducts.map((product, index) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                viewMode={viewMode}
-                onAddToCart={() => handleAddToCart(product)}
-                isPriority={index < 4}
-              />
-            ))}
-          </div>
+          <>
+            <div className={`grid gap-6 ${
+              viewMode === 'grid' 
+                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+                : 'grid-cols-1'
+            }`}>
+              {currentProducts.map((product, index) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  viewMode={viewMode}
+                  onAddToCart={() => handleAddToCart(product)}
+                  isPriority={index < 4}
+                />
+              ))}
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center mt-12 space-x-2">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <div className="flex space-x-1">
+                  {[...Array(totalPages)].map((_, i) => (
+                    <button
+                      key={i + 1}
+                      onClick={() => handlePageChange(i + 1)}
+                      className={`px-4 py-2 border rounded-md text-sm font-medium ${
+                        currentPage === i + 1
+                          ? 'bg-purple-600 text-white border-purple-600'
+                          : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
