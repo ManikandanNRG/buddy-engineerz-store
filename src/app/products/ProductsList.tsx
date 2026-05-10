@@ -469,6 +469,7 @@ export default function ProductsList({ initialProducts, initialCategories }: Pro
           </div>
         </div>
       </div>
+    </div>
 
       {/* Results Count */}
       <div className="mb-6">
