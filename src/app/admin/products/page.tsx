@@ -43,6 +43,9 @@ export default function AdminProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasInitialized, setHasInitialized] = useState(false)
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
+  const [uploadingImages, setUploadingImages] = useState(false)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -62,12 +65,43 @@ export default function AdminProductsPage() {
   // Initialize data only once when user is available
   useEffect(() => {
     if (user && !loading && !hasInitialized) {
-      console.log('🚀 Initializing products page...')
       setHasInitialized(true)
       fetchProducts()
       fetchCategories()
     }
   }, [user, loading, hasInitialized])
+
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+    setImageFiles(files)
+    const previews = files.map(file => URL.createObjectURL(file))
+    setImagePreviewUrls(previews)
+  }
+
+  const removeImageFile = (index: number) => {
+    const newFiles = imageFiles.filter((_, i) => i !== index)
+    const newPreviews = imagePreviewUrls.filter((_, i) => i !== index)
+    setImageFiles(newFiles)
+    setImagePreviewUrls(newPreviews)
+  }
+
+  const uploadImagesToStorage = async (files: File[]): Promise<string[]> => {
+    const uploadedUrls: string[] = []
+    for (const file of files) {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+      const { data, error } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, file, { cacheControl: '3600', upsert: false })
+      if (error) throw error
+      const { data: urlData } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(data.path)
+      uploadedUrls.push(urlData.publicUrl)
+    }
+    return uploadedUrls
+  }
 
   const fetchProducts = async () => {
     try {
@@ -170,13 +204,24 @@ export default function AdminProductsPage() {
     setIsSubmitting(true)
 
     try {
-      console.log('📝 Preparing product data...')
+      // Upload new images to Supabase Storage if any
+      let finalImages: string[] = []
+      if (imageFiles.length > 0) {
+        setUploadingImages(true)
+        finalImages = await uploadImagesToStorage(imageFiles)
+        setUploadingImages(false)
+      } else if (formData.images && formData.images.trim()) {
+        finalImages = formData.images.split(',').map(img => img.trim()).filter(img => img)
+      } else if (editingProduct) {
+        finalImages = editingProduct.images
+      }
+
       const productData = {
         name: formData.name,
         description: formData.description,
         price: parseFloat(formData.price),
         original_price: formData.original_price ? parseFloat(formData.original_price) : null,
-        images: formData.images && formData.images.trim() ? formData.images.split(',').map(img => img.trim()).filter(img => img) : [],
+        images: finalImages,
         category: formData.category,
         sizes: formData.sizes && formData.sizes.trim() ? formData.sizes.split(',').map(size => size.trim()).filter(size => size) : [],
         colors: formData.colors && formData.colors.trim() ? formData.colors.split(',').map(color => color.trim()).filter(color => color) : [],
@@ -238,12 +283,14 @@ export default function AdminProductsPage() {
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product)
+    setImageFiles([])
+    setImagePreviewUrls(product.images || [])
     setFormData({
       name: product.name,
       description: product.description || '',
       price: product.price.toString(),
       original_price: product.original_price?.toString() || '',
-      images: product.images.join(', '),
+      images: '',
       category: product.category,
       sizes: product.sizes.join(', '),
       colors: product.colors.join(', '),
@@ -288,6 +335,8 @@ export default function AdminProductsPage() {
       gender: 'unisex',
       tags: ''
     })
+    setImageFiles([])
+    setImagePreviewUrls([])
     setEditingProduct(null)
     setShowAddModal(false)
     setIsSubmitting(false)
@@ -555,16 +604,59 @@ export default function AdminProductsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Images (comma-separated URLs)
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Product Images
                 </label>
-                <input
-                  type="text"
-                  value={formData.images}
-                  onChange={(e) => setFormData({ ...formData, images: e.target.value })}
-                  placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
+                {/* Image Previews */}
+                {imagePreviewUrls.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {imagePreviewUrls.map((url, index) => (
+                      <div key={index} className="relative">
+                        <img
+                          src={url}
+                          alt={`Preview ${index + 1}`}
+                          className="w-20 h-20 object-cover rounded-lg border border-gray-200"
+                          onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=80&h=80&fit=crop' }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImageFile(index)}
+                          className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {/* File Upload */}
+                <label className="flex items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-colors">
+                  <div className="text-center">
+                    <div className="text-2xl mb-1">📷</div>
+                    <span className="text-sm text-gray-500">
+                      {uploadingImages ? 'Uploading...' : 'Click to upload images'}
+                    </span>
+                    <span className="block text-xs text-gray-400">JPG, PNG, WEBP up to 5MB</span>
+                  </div>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageFileChange}
+                    disabled={uploadingImages}
+                  />
+                </label>
+                {/* URL fallback */}
+                <div className="mt-2">
+                  <input
+                    type="text"
+                    value={formData.images}
+                    onChange={(e) => setFormData({ ...formData, images: e.target.value })}
+                    placeholder="Or paste image URLs (comma-separated)"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -655,7 +747,7 @@ export default function AdminProductsPage() {
                   {isSubmitting ? (
                     <div className="flex items-center">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      {editingProduct ? 'Updating...' : 'Adding...'}
+                      {uploadingImages ? 'Uploading Images...' : editingProduct ? 'Updating...' : 'Adding...'}
                     </div>
                   ) : (
                     editingProduct ? 'Update Product' : 'Add Product'

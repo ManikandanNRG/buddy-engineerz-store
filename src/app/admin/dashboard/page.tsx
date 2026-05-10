@@ -40,18 +40,18 @@ export default function AdminDashboardPage() {
 
       const { data: orders } = await supabase
         .from('orders')
-        .select('total_amount, status, created_at, id')
+        .select('total, status, created_at, id')
 
       const { data: products } = await supabase
         .from('products')
-        .select('id, name, price, stock_quantity')
+        .select('id, name, price, stock')
 
       const { data: customers } = await supabase
-        .from('users')
+        .from('user_profiles')
         .select('id, email, created_at')
 
       const totalOrders = orders?.length || 0
-      const totalRevenue = orders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0
+      const totalRevenue = orders?.reduce((sum, order) => sum + (order.total || 0), 0) || 0
       const totalProducts = products?.length || 0
       const totalCustomers = customers?.length || 0
 
