@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Search, Grid, List, ShoppingCart, Heart, X } from 'lucide-react'
+import { Search, Grid, List, ShoppingCart, Heart, X, Filter } from 'lucide-react'
 import { formatPrice, calculateDiscount } from '@/lib/database'
 import { useCartStore } from '@/store/cart'
 import type { Product, Category } from '@/lib/supabase'
@@ -39,7 +39,7 @@ function ProductCard({
   if (viewMode === 'list') {
     return (
       <div 
-        className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow animate-fade-up"
+        className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md hover:scale-[1.02] transition-all duration-300 animate-fade-up"
         style={{ animationDelay: `${index * 100}ms` }}
       >
         <div className="flex flex-col md:flex-row">
@@ -121,7 +121,7 @@ function ProductCard({
 
   return (
     <div 
-      className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow animate-fade-up"
+      className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md hover:scale-[1.02] transition-all duration-300 animate-fade-up"
       style={{ animationDelay: `${index * 100}ms` }}
     >
       <div className="relative">
@@ -207,6 +207,7 @@ export default function ProductsList({ initialProducts, initialCategories }: Pro
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000])
   const [sortBy, setSortBy] = useState<string>('newest')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [showMobileFilters, setShowMobileFilters] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const productsPerPage = 12
 
@@ -321,22 +322,39 @@ export default function ProductsList({ initialProducts, initialCategories }: Pro
 
       {/* Search and Filters */}
       <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-        {/* Search Bar */}
-        <div className="relative mb-6">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400" />
+        <div className="flex flex-col md:flex-row gap-4 mb-6">
+          {/* Search Bar */}
+          <div className="relative flex-1">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+            />
           </div>
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
-          />
+
+          {/* Mobile Filter Toggle */}
+          <button
+            onClick={() => setShowMobileFilters(!showMobileFilters)}
+            className="md:hidden flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-gray-700"
+          >
+            <Filter className="h-4 w-4" />
+            {showMobileFilters ? 'Hide Filters' : 'Show Filters'}
+            {activeFiltersCount > 0 && (
+              <span className="ml-1 px-1.5 py-0.5 bg-purple-100 text-purple-700 text-xs font-bold rounded-full">
+                {activeFiltersCount}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* Filter Controls */}
-        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+        <div className={`${showMobileFilters ? 'block' : 'hidden'} md:block`}>
+          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
           <div className="flex flex-wrap gap-4 items-center">
             {/* Category Filter */}
             <select

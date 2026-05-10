@@ -258,10 +258,23 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 <button
                   onClick={handleAddToCart}
                   disabled={product.stock === 0}
-                  className="flex items-center justify-center gap-2 bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className={`flex items-center justify-center gap-2 py-3 rounded-lg transition-all duration-300 ${
+                    showAddedToast 
+                      ? 'bg-green-600 text-white' 
+                      : 'bg-purple-600 text-white hover:bg-purple-700'
+                  } disabled:bg-gray-400 disabled:cursor-not-allowed`}
                 >
-                  <ShoppingCart className="h-5 w-5" />
-                  Add to Cart
+                  {showAddedToast ? (
+                    <>
+                      <Check className="h-5 w-5 animate-in zoom-in duration-300" />
+                      <span>Added!</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="h-5 w-5" />
+                      <span>Add to Cart</span>
+                    </>
+                  )}
                 </button>
                 <button
                   onClick={handleBuyNow}

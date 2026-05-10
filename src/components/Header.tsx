@@ -130,6 +130,9 @@ export default function Header() {
             <Link href="/blog" className="text-gray-700 hover:text-purple-600 transition-colors">
               Blog
             </Link>
+            <Link href="/wishlist" className="text-gray-700 hover:text-purple-600 transition-colors">
+              Wishlist
+            </Link>
             <Link href="/about" className="text-gray-700 hover:text-purple-600 transition-colors">
               About
             </Link>
@@ -220,6 +223,28 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Contact
+              </Link>
+              <hr className="my-2 border-gray-100" />
+              <Link 
+                href="/wishlist" 
+                className="block text-gray-700 hover:text-purple-600 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Wishlist
+              </Link>
+              <Link 
+                href="/account" 
+                className="block text-gray-700 hover:text-purple-600 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                My Account
+              </Link>
+              <Link 
+                href="/orders" 
+                className="block text-gray-700 hover:text-purple-600 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                My Orders
               </Link>
             </nav>
             
