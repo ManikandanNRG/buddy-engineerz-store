@@ -49,10 +49,12 @@ export default function AdminOrdersPage() {
       setOrdersLoading(true)
       console.log('🔍 Fetching orders...')
       
-      // Try simple query first to avoid JOIN issues
       const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
-        .select('*')
+        .select(`
+          *,
+          user_profiles:user_id(name)
+        `)
         .order('created_at', { ascending: false })
 
       if (ordersError) {

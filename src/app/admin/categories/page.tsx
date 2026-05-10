@@ -24,6 +24,9 @@ export default function AdminCategoriesPage() {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string>('')
+  const [uploadingImage, setUploadingImage] = useState(false)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -107,6 +110,31 @@ export default function AdminCategoriesPage() {
     }
   }, [user, fetchCategories])
 
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImageFile(file)
+    setImagePreviewUrl(URL.createObjectURL(file))
+  }
+
+  const removeImageFile = () => {
+    setImageFile(null)
+    setImagePreviewUrl('')
+  }
+
+  const uploadImageToStorage = async (file: File): Promise<string> => {
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+    const { data, error } = await supabase.storage
+      .from('category-images')
+      .upload(fileName, file, { cacheControl: '3600', upsert: false })
+    if (error) throw error
+    const { data: urlData } = supabase.storage
+      .from('category-images')
+      .getPublicUrl(data.path)
+    return urlData.publicUrl
+  }
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -121,10 +149,18 @@ export default function AdminCategoriesPage() {
     setIsSubmitting(true)
 
     try {
+      let finalImageUrl = formData.image_url.trim()
+      
+      if (imageFile) {
+        setUploadingImage(true)
+        finalImageUrl = await uploadImageToStorage(imageFile)
+        setUploadingImage(false)
+      }
+
       const categoryData = {
         name: formData.name.trim(),
         description: formData.description.trim(),
-        image_url: formData.image_url.trim()
+        image_url: finalImageUrl
       }
 
       if (editingCategory) {
@@ -164,23 +200,41 @@ export default function AdminCategoriesPage() {
   // Handle edit
   const handleEdit = (category: Category) => {
     setEditingCategory(category)
+    setImageFile(null)
+    setImagePreviewUrl(category.image_url || '')
     setFormData({
       name: category.name,
       description: category.description,
-      image_url: category.image_url
+      image_url: '' // We clear the string input when using preview
     })
     setShowAddModal(true)
   }
 
   // Handle delete
-  const handleDelete = async (categoryId: string) => {
-    if (!confirm('Are you sure you want to delete this category?')) return
-
+  const handleDelete = async (category: Category) => {
     try {
+      // First check if there are products using this category
+      const { data: products, error: checkError } = await supabase
+        .from('products')
+        .select('id')
+        .eq('category', category.name)
+
+      if (checkError) throw checkError
+
+      if (products && products.length > 0) {
+        if (!confirm(`Warning: There are ${products.length} products in this category. Deleting this category will not delete the products, but they may not display correctly. Are you sure you want to proceed?`)) {
+          return
+        }
+      } else {
+        if (!confirm(`Are you sure you want to delete the "${category.name}" category?`)) {
+          return
+        }
+      }
+
       const { error } = await supabase
         .from('categories')
         .delete()
-        .eq('id', categoryId)
+        .eq('id', category.id)
 
       if (error) throw error
       toast.success('Category deleted successfully!')
@@ -198,6 +252,8 @@ export default function AdminCategoriesPage() {
       description: '',
       image_url: ''
     })
+    setImageFile(null)
+    setImagePreviewUrl('')
     setEditingCategory(null)
     setShowAddModal(false)
   }
@@ -338,7 +394,7 @@ export default function AdminCategoriesPage() {
                             Edit
                           </button>
                           <button
-                            onClick={() => handleDelete(category.id)}
+                            onClick={() => handleDelete(category)}
                             className="text-red-600 hover:text-red-800 text-sm"
                           >
                             Delete
@@ -420,16 +476,56 @@ export default function AdminCategoriesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Image URL
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Category Image
                 </label>
-                <input
-                  type="url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="https://example.com/image.jpg"
-                />
+                
+                {imagePreviewUrl && (
+                  <div className="relative mb-3 inline-block">
+                    <img
+                      src={imagePreviewUrl}
+                      alt="Preview"
+                      className="w-32 h-32 object-cover rounded-lg border border-gray-200"
+                      onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=128&h=128&fit=crop' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={removeImageFile}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 shadow-md"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+
+                {!imagePreviewUrl && (
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-colors">
+                    <div className="text-center">
+                      <div className="text-2xl mb-2">📷</div>
+                      <span className="text-sm text-gray-500">
+                        {uploadingImage ? 'Uploading...' : 'Click to upload image'}
+                      </span>
+                      <span className="block text-xs text-gray-400 mt-1">JPG, PNG, WEBP up to 5MB</span>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageFileChange}
+                      disabled={uploadingImage}
+                    />
+                  </label>
+                )}
+
+                <div className="mt-3">
+                  <input
+                    type="url"
+                    value={formData.image_url}
+                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Or paste image URL: https://example.com/image.jpg"
+                  />
+                </div>
               </div>
 
               <div className="flex justify-end space-x-3 pt-4">
@@ -443,9 +539,16 @@ export default function AdminCategoriesPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg transition-colors"
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg transition-colors flex items-center"
                 >
-                  {isSubmitting ? 'Saving...' : (editingCategory ? 'Update Category' : 'Create Category')}
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      {uploadingImage ? 'Uploading Image...' : (editingCategory ? 'Updating...' : 'Creating...')}
+                    </>
+                  ) : (
+                    editingCategory ? 'Update Category' : 'Create Category'
+                  )}
                 </button>
               </div>
             </form>
