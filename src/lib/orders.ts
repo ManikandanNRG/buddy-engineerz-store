@@ -5,32 +5,18 @@ import type { Address } from './addresses'
 export interface Order {
   id: string
   user_id: string
+  order_number: string
   status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
-  total_amount: number
-  subtotal: number
-  shipping_cost: number
-  tax_amount: number
-  payment_method: string
+  total: number
   payment_status: 'pending' | 'completed' | 'failed' | 'refunded'
   payment_id?: string
   shipping_address: Address
   created_at: string
   updated_at: string
-  items: OrderItem[]
+  items: any[]
 }
 
-export interface OrderItem {
-  id: string
-  order_id: string
-  product_id: string
-  product_name: string
-  product_image: string
-  quantity: number
-  price: number
-  size?: string
-  color?: string
-  created_at: string
-}
+
 
 export interface CreateOrderData {
   user_id: string
@@ -53,24 +39,31 @@ export interface OrdersResponse {
   error: any
 }
 
-// Create a new order
+// Generate an order number
+function generateOrderNumber(): string {
+  const date = new Date()
+  const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '')
+  const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase()
+  return `ORD-${dateStr}-${randomStr}`
+}
+
 export async function createOrder(orderData: CreateOrderData): Promise<OrderResponse> {
   try {
     console.log('📦 Creating order for user:', orderData.user_id)
     
-    // Start a transaction
+    const orderNumber = generateOrderNumber()
+    
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
         user_id: orderData.user_id,
+        order_number: orderNumber,
         status: 'pending',
-        total_amount: orderData.total_amount,
-        subtotal: orderData.subtotal,
-        shipping_cost: orderData.shipping_cost,
-        tax_amount: orderData.tax_amount,
-        payment_method: orderData.payment_method,
-        payment_status: 'pending',
+        total: orderData.total_amount,
+        items: JSON.parse(JSON.stringify(orderData.items)),
         shipping_address: orderData.shipping_address,
+        payment_status: 'pending',
+        payment_id: null
       })
       .select()
       .single()
@@ -80,37 +73,8 @@ export async function createOrder(orderData: CreateOrderData): Promise<OrderResp
       return { order: null, error: orderError }
     }
 
-    // Create order items
-    const orderItems = orderData.items.map(item => ({
-      order_id: order.id,
-      product_id: item.product.id,
-      product_name: item.product.name,
-      product_image: item.product.images[0] || '',
-      quantity: item.quantity,
-      price: item.product.price,
-      size: item.size,
-      color: item.color,
-    }))
-
-    const { data: items, error: itemsError } = await supabase
-      .from('order_items')
-      .insert(orderItems)
-      .select()
-
-    if (itemsError) {
-      console.error('❌ Create order items error:', itemsError)
-      // Rollback order creation
-      await supabase.from('orders').delete().eq('id', order.id)
-      return { order: null, error: itemsError }
-    }
-
-    const fullOrder: Order = {
-      ...order,
-      items: items || []
-    }
-
     console.log('✅ Order created successfully:', order.id)
-    return { order: fullOrder, error: null }
+    return { order, error: null }
   } catch (catchError) {
     console.error('💥 Create order catch error:', catchError)
     return { order: null, error: catchError }
@@ -124,10 +88,7 @@ export async function getUserOrders(userId: string): Promise<OrdersResponse> {
     
     const { data: orders, error: ordersError } = await supabase
       .from('orders')
-      .select(`
-        *,
-        items:order_items(*)
-      `)
+      .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
 
@@ -151,10 +112,7 @@ export async function getOrder(orderId: string, userId: string): Promise<OrderRe
     
     const { data: order, error } = await supabase
       .from('orders')
-      .select(`
-        *,
-        items:order_items(*)
-      `)
+      .select('*')
       .eq('id', orderId)
       .eq('user_id', userId)
       .single()

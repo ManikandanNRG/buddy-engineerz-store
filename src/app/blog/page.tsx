@@ -1,102 +1,35 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Calendar, User, ArrowRight, Tag } from 'lucide-react'
+import { Calendar, User, ArrowRight, Tag, Loader2 } from 'lucide-react'
+import { getBlogPosts, type BlogPost } from '@/lib/blog'
 
-interface BlogPost {
-  id: string
-  title: string
-  excerpt: string
-  content: string
-  image: string
-  author: string
-  publishedAt: string
-  tags: string[]
-  slug: string
-}
 
-const blogPosts: BlogPost[] = [
-  {
-    id: '1',
-    title: 'Essential T-Shirts Every Engineer Needs in Their Professional Wardrobe',
-    excerpt: 'Discover the must-have t-shirt styles that combine comfort, quality, and professional appeal for modern engineers. From casual office wear to weekend essentials.',
-    content: '',
-    image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&h=400&fit=crop',
-    author: 'Buddy Engineerz Team',
-    publishedAt: '2024-12-27',
-    tags: ['engineer fashion', 't-shirts', 'professional wear', 'wardrobe essentials'],
-    slug: 'essential-tshirts-engineer-wardrobe-2024'
-  },
-  {
-    id: '2',
-    title: 'The Buddy Engineerz Story: Redefining Professional Fashion for Engineers',
-    excerpt: 'Discover how Buddy Engineerz became the go-to fashion brand for engineers and technical professionals who want quality, style, and comfort in their wardrobe.',
-    content: '',
-    image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&h=400&fit=crop',
-    author: 'Buddy Engineerz Team',
-    publishedAt: '2024-12-27',
-    tags: ['buddy engineerz', 'brand story', 'engineering fashion', 'professional apparel'],
-    slug: 'buddy-engineerz-brand-story'
-  },
-  {
-    id: '3',
-    title: 'Engineering Fashion Trends: What Professionals Are Wearing in 2024',
-    excerpt: 'Explore the latest fashion trends in the engineering industry. From modern office casual to conference-ready outfits, discover how professionals are expressing their style.',
-    content: '',
-    image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=600&h=400&fit=crop',
-    author: 'Buddy Engineerz Team',
-    publishedAt: '2024-12-26',
-    tags: ['engineering fashion', 'professional trends', 'workplace style'],
-    slug: 'engineering-fashion-trends-2024'
-  },
-  {
-    id: '4',
-    title: 'The Perfect Hoodie for Modern Engineers: Comfort Meets Style',
-    excerpt: 'Discover how to choose the perfect hoodie that balances comfort, quality, and professional appeal. Essential guide for building your engineering wardrobe.',
-    content: '',
-    image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=600&h=400&fit=crop',
-    author: 'Buddy Engineerz Team',
-    publishedAt: '2024-12-25',
-    tags: ['hoodies', 'engineer comfort', 'professional casual'],
-    slug: 'perfect-hoodie-modern-engineers'
-  },
-  {
-    id: '5',
-    title: 'Ultimate Gift Guide for Engineers and Technical Professionals',
-    excerpt: 'Find the perfect apparel gifts for the engineers in your life. From premium basics to stylish accessories, discover thoughtful gifts they will actually wear.',
-    content: '',
-    image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600&h=400&fit=crop',
-    author: 'Buddy Engineerz Team',
-    publishedAt: '2024-12-24',
-    tags: ['engineer gifts', 'professional apparel', 'gift guide'],
-    slug: 'ultimate-gift-guide-engineers'
-  },
-  {
-    id: '6',
-    title: 'How to Style Engineering Apparel for Different Occasions',
-    excerpt: 'Learn how to style your engineering apparel for various occasions - from casual office days to professional conferences and networking events.',
-    content: '',
-    image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&h=400&fit=crop',
-    author: 'Buddy Engineerz Team',
-    publishedAt: '2024-12-23',
-    tags: ['engineering fashion', 'styling tips', 'professional wear'],
-    slug: 'style-engineering-apparel-different-occasions'
-  },
-  {
-    id: '7',
-    title: 'Building a Professional Wardrobe: Engineering Edition',
-    excerpt: 'Essential guide to building a versatile, professional wardrobe that works for modern engineers. From office basics to weekend essentials.',
-    content: '',
-    image: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&h=400&fit=crop',
-    author: 'Buddy Engineerz Team',
-    publishedAt: '2024-12-22',
-    tags: ['professional wardrobe', 'engineer fashion', 'wardrobe building'],
-    slug: 'building-professional-wardrobe-engineers'
-  }
-]
 
 export default function BlogPage() {
+  const [posts, setPosts] = useState<BlogPost[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function loadPosts() {
+      try {
+        const { posts: data, error } = await getBlogPosts()
+        if (error) throw error
+        setPosts(data)
+      } catch (err) {
+        console.error('Failed to load blog posts:', err)
+        setError('Failed to load blog posts. Please try again later.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadPosts()
+  }, [])
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -118,8 +51,22 @@ export default function BlogPage() {
 
       {/* Blog Posts Grid */}
       <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogPosts.map((post) => (
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="h-10 w-10 animate-spin text-purple-600 mb-4" />
+            <p className="text-gray-500">Loading engineering insights...</p>
+          </div>
+        ) : error ? (
+          <div className="bg-red-50 border border-red-200 text-red-700 p-6 rounded-lg text-center">
+            <p>{error}</p>
+          </div>
+        ) : posts.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-gray-500 text-lg">No blog posts found yet. Check back soon!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {posts.map((post) => (
             <article key={post.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow group">
               <div className="relative aspect-video">
                 <Image
@@ -139,7 +86,7 @@ export default function BlogPage() {
                   </div>
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
-                    <span>{new Date(post.publishedAt).toLocaleDateString()}</span>
+                    <span>{new Date(post.published_at).toLocaleDateString()}</span>
                   </div>
                 </div>
                 
@@ -176,8 +123,9 @@ export default function BlogPage() {
                 </div>
               </div>
             </article>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Newsletter CTA */}

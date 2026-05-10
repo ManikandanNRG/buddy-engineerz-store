@@ -16,22 +16,11 @@ import {
 } from 'lucide-react'
 import { getProducts, formatPrice } from '@/lib/database'
 import { useCartStore } from '@/store/cart'
+import { useWishlistStore } from '@/store/wishlist'
+import type { Product as DBProduct } from '@/lib/supabase'
 
-interface Product {
-  id: string
-  name: string
-  description: string
-  price: number
+interface Product extends DBProduct {
   original_price?: number
-  images: string[]
-  category: string
-  gender: string
-  sizes: string[]
-  colors: string[]
-  stock: number
-  featured: boolean
-  sale: boolean
-  created_at: string
 }
 
 export default function SalePage() {
@@ -42,6 +31,7 @@ export default function SalePage() {
   const [filterCategory, setFilterCategory] = useState('all')
   const [filterGender, setFilterGender] = useState('all')
   const { addItem } = useCartStore()
+  const { toggleItem } = useWishlistStore()
 
   useEffect(() => {
     loadProducts()
@@ -50,10 +40,10 @@ export default function SalePage() {
   const loadProducts = async () => {
     try {
       setLoading(true)
-      const allProducts = await getProducts()
+      const { products: allProducts } = await getProducts()
       // Filter only sale products and add mock discounts
-      const saleProducts = allProducts
-        .filter(product => product.sale || Math.random() > 0.7) // Mock sale filter
+      const saleProducts = (allProducts || [])
+        .filter((product: any) => product.sale || Math.random() > 0.7) // Mock sale filter
         .map(product => ({
           ...product,
           original_price: product.original_price || Math.round(product.price * 1.3), // Mock original price

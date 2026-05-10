@@ -16,6 +16,7 @@ import {
 import { useCartStore } from '@/store/cart'
 import { useWishlistStore } from '@/store/wishlist'
 import { formatPrice } from '@/lib/database'
+import type { Product } from '@/lib/supabase'
 
 export default function CartPage() {
   const { 

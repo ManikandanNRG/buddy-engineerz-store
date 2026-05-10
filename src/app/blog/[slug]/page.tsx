@@ -4,98 +4,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Calendar, User, ArrowLeft, Tag, Share2 } from 'lucide-react'
 
-interface BlogPost {
-  id: string
-  title: string
-  excerpt: string
-  content: string
-  image: string
-  author: string
-  publishedAt: string
-  tags: string[]
-  slug: string
-}
+import { getBlogPostBySlug } from '@/lib/blog'
 
-const blogPosts: BlogPost[] = [
-  {
-    id: '1',
-    title: 'Top 10 Programming T-Shirts Every Developer Needs in 2024',
-    excerpt: 'Discover the most popular programming t-shirts that showcase your coding skills and passion for technology. From minimalist designs to witty programming jokes.',
-    content: `As a developer, your wardrobe speaks volumes about your passion for coding and technology. Whether you're working from home, attending a tech conference, or just grabbing coffee with fellow developers, the right programming t-shirt can be a great conversation starter and a way to express your personality.
 
-Programming t-shirts are more than just clothing – they're a form of self-expression in the tech community. They can start conversations with fellow developers, show your expertise in specific technologies, express your sense of humor about coding challenges, and build community within the tech world.
-
-Here are our top 10 picks for 2024:
-
-**1. The Classic "Hello World" Tee**
-Every developer's journey starts with "Hello World" – make it yours with this timeless design.
-
-**2. Minimalist Algorithm Flowchart**
-Clean, simple, and elegant – perfect for developers who appreciate good design.
-
-**3. "There Are Only 10 Types of People" Binary Joke**
-A classic programming joke that never gets old.
-
-**4. Stack Overflow Survivor**
-For those who've survived countless debugging sessions with the help of Stack Overflow.
-
-**5. Git Commit Messages**
-Featuring hilarious real-world git commit messages that every developer can relate to.
-
-**6. Programming Language Hierarchy**
-Show your favorite programming language with style.
-
-**7. "99 Little Bugs in the Code"**
-The programmer's version of the classic song – frustratingly accurate.
-
-**8. Caffeine Molecule Structure**
-Because every developer knows the molecular structure of their fuel.
-
-**9. Error 404: Sleep Not Found**
-Perfect for those late-night coding sessions.
-
-**10. Code Quality Meter**
-Let everyone know the quality of your code with this humorous meter design.
-
-When choosing programming t-shirts, consider fabric quality (look for 100% cotton or cotton blends), print durability (ensure designs won't fade after washing), fit (choose cuts that are comfortable for long coding sessions), and brand reputation (support companies that understand developer culture).
-
-Programming t-shirts are a fun and practical way to express your passion for coding. Whether you prefer subtle references or bold statements, there's a design out there that perfectly captures your developer personality.
-
-Ready to upgrade your developer wardrobe? Check out our collection of premium programming t-shirts designed by developers, for developers.`,
-    image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&h=400&fit=crop',
-    author: 'Buddy Engineerz Team',
-    publishedAt: '2024-12-27',
-    tags: ['programming', 't-shirts', 'developer fashion', 'coding'],
-    slug: 'top-10-programming-tshirts-2024'
-  },
-  {
-    id: '2',
-    title: 'The Buddy Engineerz Story: From Code to Fashion',
-    excerpt: 'Discover how Buddy Engineerz became the go-to brand for engineers, developers, and tech enthusiasts who want to wear their passion with pride.',
-    content: `In 2024, a group of passionate software engineers and designers came together with a shared frustration: there was no premium apparel brand that truly understood and celebrated engineering culture. That's when Buddy Engineerz was born – not just as a clothing brand, but as a movement to celebrate the creativity, innovation, and unique culture of engineers worldwide.
-
-**What Makes Buddy Engineerz Special**
-
-Unlike other brands that simply slap code snippets on t-shirts, Buddy Engineerz designs are created by engineers who live and breathe the culture. Every design tells a story that resonates with developers, from the frustration of debugging to the joy of a successful deployment.
-
-**Our Signature Collections**
-
-Our flagship Algorithm Tee started it all. With its clean, minimalist design featuring elegant algorithm flowcharts, it quickly became a favorite among developers who appreciate both style and substance.
-
-**The Buddy Engineerz Community**
-
-Today, Buddy Engineerz is worn by over 10,000 engineers across 25+ countries. From Silicon Valley startups to tech giants in Bangalore, from freelance developers in Berlin to engineering students in São Paulo – our community spans the globe.
-
-What unites us isn't just our love for well-designed apparel, but our shared passion for engineering, innovation, and the belief that code can change the world.
-
-Join the Buddy Engineerz movement and wear your passion with pride.`,
-    image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&h=400&fit=crop',
-    author: 'Buddy Engineerz Team',
-    publishedAt: '2024-12-27',
-    tags: ['buddy engineerz', 'brand story', 'engineering fashion', 'developer community'],
-    slug: 'buddy-engineerz-brand-story'
-  }
-]
 
 interface PageProps {
   params: {
@@ -104,7 +15,7 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const post = blogPosts.find(p => p.slug === params.slug)
+  const { post } = await getBlogPostBySlug(params.slug)
   
   if (!post) {
     return {
@@ -121,7 +32,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: post.excerpt,
       images: [post.image],
       type: 'article',
-      publishedTime: post.publishedAt,
+      publishedTime: post.published_at,
       authors: [post.author],
     },
     twitter: {
@@ -133,8 +44,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default function BlogPostPage({ params }: PageProps) {
-  const post = blogPosts.find(p => p.slug === params.slug)
+export default async function BlogPostPage({ params }: PageProps) {
+  const { post } = await getBlogPostBySlug(params.slug)
 
   if (!post) {
     notFound()
@@ -178,7 +89,7 @@ export default function BlogPostPage({ params }: PageProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  <span>{new Date(post.publishedAt).toLocaleDateString('en-US', {
+                  <span>{new Date(post.published_at).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'

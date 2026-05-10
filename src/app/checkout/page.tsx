@@ -21,6 +21,9 @@ import { useCartStore } from '@/store/cart'
 import { getUserAddresses, createAddress, setDefaultAddress, deleteAddress, updateAddress, validateAddress, formatAddress, getAddressTypeDisplay, type AddressInput } from '@/lib/addresses'
 import { formatPrice } from '@/lib/database'
 import type { Address } from '@/lib/addresses'
+import { createOrder } from '@/lib/orders'
+import type { CreateOrderData } from '@/lib/orders'
+import { sendOrderConfirmationEmail } from '@/app/actions/email'
 import { COUNTRIES } from '@/lib/countries'
 
 export default function CheckoutPage() {
@@ -263,17 +266,51 @@ export default function CheckoutPage() {
   }
 
   const handlePayment = async () => {
-    // TODO: Integrate with Razorpay
-    setSubmitting(true)
+    if (!user || !selectedAddress) return
     
-    // Simulate payment processing
-    setTimeout(() => {
-      setStep('confirmation')
+    setSubmitting(true)
+    setError('')
+    
+    try {
+      // Create the order data payload
+      const orderData: CreateOrderData = {
+        user_id: user.id,
+        items: items,
+        shipping_address: selectedAddress,
+        subtotal: getTotalPrice(),
+        shipping_cost: shipping,
+        tax_amount: tax,
+        total_amount: total,
+        payment_method: 'COD' // Using COD for simulation
+      }
+
+      const { order, error: orderError } = await createOrder(orderData)
+
+      if (orderError || !order) {
+        throw new Error(orderError?.message || 'Failed to create order')
+      }
+
+      // Send confirmation email
+      try {
+        await sendOrderConfirmationEmail(order.order_number, order.total, user.user_metadata?.name || 'Customer', user.email!)
+      } catch (emailErr) {
+        console.error('Failed to send confirmation email', emailErr)
+      }
+
+      // Simulate payment processing delay
+      await new Promise(resolve => setTimeout(resolve, 1500))
+
+      // Clear the cart
+      clearCart()
+      
+      // Redirect to confirmation page
+      router.push(`/order-confirmation/${order.id}`)
+      
+    } catch (err: any) {
+      setError(err.message || 'An error occurred while processing your order.')
+      console.error(err)
       setSubmitting(false)
-      // TODO: Create order in database
-      // TODO: Send confirmation email
-      // clearCart() // Clear cart after successful order
-    }, 2000)
+    }
   }
 
   if (authLoading || loading || cartLoading || !cartHydrated) {
@@ -293,35 +330,6 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return null // Will redirect to products
-  }
-
-  // Confirmation step
-  if (step === 'confirmation') {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="max-w-md mx-auto bg-white rounded-lg shadow-sm p-8 text-center">
-          <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Order Confirmed!</h1>
-          <p className="text-gray-600 mb-6">
-            Thank you for your order. You'll receive a confirmation email shortly.
-          </p>
-          <div className="space-y-3">
-            <Link
-              href="/account/orders"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700"
-            >
-              View Order Details
-            </Link>
-            <Link
-              href="/products"
-              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-            >
-              Continue Shopping
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   const subtotal = getTotalPrice()

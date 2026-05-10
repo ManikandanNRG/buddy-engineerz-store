@@ -70,6 +70,17 @@ const navigation: SidebarItem[] = [
     ),
   },
   {
+    name: 'Blog',
+    href: '/admin/blog',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 2v6h6" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 13H8m8 4H8m0-8h1" />
+      </svg>
+    ),
+  },
+  {
     name: 'Settings',
     href: '/admin/settings',
     icon: (

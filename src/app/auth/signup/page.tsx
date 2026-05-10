@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowLeft, Loader2, CheckCircle } from 'lucide-react'
 import { signUp, getErrorMessage, isValidEmail, isValidPassword, isValidPhone } from '@/lib/auth'
 import { useAuth } from '@/hooks/useAuth'
+import { sendWelcomeEmail } from '@/app/actions/email'
 
 export default function SignUpPage() {
   const router = useRouter()
@@ -86,6 +87,13 @@ export default function SignUpPage() {
       if (error) {
         setMessage(getErrorMessage(error))
       } else if (newUser) {
+        // Send welcome email
+        try {
+          await sendWelcomeEmail(formData.name.trim(), formData.email)
+        } catch (emailErr) {
+          console.error('Failed to send welcome email', emailErr)
+        }
+        
         setSuccess(true)
         setMessage('Account created successfully! Please check your email to verify your account.')
       }

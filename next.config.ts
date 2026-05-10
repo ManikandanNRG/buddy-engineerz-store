@@ -3,7 +3,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ['images.unsplash.com'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -21,10 +20,6 @@ const nextConfig: NextConfig = {
     // Disable optimization for external images to prevent 404 errors
     loader: 'default',
     unoptimized: false,
-  },
-  eslint: {
-    // Disable ESLint during build
-    ignoreDuringBuilds: true,
   },
   typescript: {
     // Disable TypeScript errors during build

@@ -354,7 +354,7 @@ export default function AdminAnalyticsPage() {
                             tickFormatter={(value) => `₹${value}`} 
                           />
                           <Tooltip 
-                            formatter={(value: number) => [`₹${value}`, 'Revenue']}
+                            formatter={(value: any) => [`₹${value}`, 'Revenue']}
                             contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                           />
                           <Line type="monotone" dataKey="revenue" stroke="#22c55e" strokeWidth={3} dot={{ r: 4, fill: '#22c55e', strokeWidth: 0 }} activeDot={{ r: 6 }} />
@@ -385,7 +385,7 @@ export default function AdminAnalyticsPage() {
                             ))}
                           </Pie>
                           <Tooltip 
-                            formatter={(value: number) => [value, 'Orders']}
+                            formatter={(value: any) => [value, 'Orders']}
                             contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                           />
                           <Legend className="capitalize" />
@@ -443,7 +443,7 @@ export default function AdminAnalyticsPage() {
                           <XAxis dataKey="month" stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
                           <YAxis stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
                           <Tooltip 
-                            formatter={(value: number) => [value, 'New Customers']}
+                            formatter={(value: any) => [value, 'New Customers']}
                             cursor={{ fill: '#f3f4f6' }}
                             contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                           />

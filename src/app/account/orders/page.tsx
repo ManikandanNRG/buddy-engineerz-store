@@ -192,14 +192,14 @@ function OrderCard({
               </div>
               <div className="flex items-center gap-1">
                 <CreditCard className="h-4 w-4" />
-                <span>{order.payment_method}</span>
+                <span>Cash on Delivery</span>
               </div>
             </div>
           </div>
           
           <div className="text-right">
             <div className="text-lg font-semibold text-gray-900">
-              {formatPrice(order.total_amount)}
+              {formatPrice(order.total || 0)}
             </div>
             <div className="flex items-center gap-2 mt-1">
               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -227,15 +227,15 @@ function OrderCard({
         {/* Order Items Preview */}
         <div className="flex items-center gap-4 mb-4">
           <div className="flex -space-x-2">
-            {order.items.slice(0, 3).map((item, index) => (
+            {order.items.slice(0, 3).map((item: any) => (
               <div key={item.id} className="relative w-12 h-12 rounded-lg overflow-hidden border-2 border-white">
                 <Image
-                  src={item.product_image || '/placeholder-product.jpg'}
-                  alt={item.product_name}
+                  src={item.product?.images?.[0] || '/placeholder-product.jpg'}
+                  alt={item.product?.name || 'Product'}
                   fill
                   sizes="48px"
                   className="object-cover"
-                  unoptimized={item.product_image?.includes('unsplash.com')}
+                  unoptimized={item.product?.images?.[0]?.includes('unsplash.com')}
                 />
               </div>
             ))}
@@ -289,20 +289,20 @@ function OrderCard({
             <div>
               <h4 className="font-medium text-gray-900 mb-4">Items Ordered</h4>
               <div className="space-y-4">
-                {order.items.map((item) => (
+                {order.items.map((item: any) => (
                   <div key={item.id} className="flex gap-4">
                     <div className="relative w-16 h-16 flex-shrink-0">
                       <Image
-                        src={item.product_image || '/placeholder-product.jpg'}
-                        alt={item.product_name}
+                        src={item.product?.images?.[0] || '/placeholder-product.jpg'}
+                        alt={item.product?.name || 'Product'}
                         fill
                         sizes="64px"
                         className="object-cover rounded-lg"
-                        unoptimized={item.product_image?.includes('unsplash.com')}
+                        unoptimized={item.product?.images?.[0]?.includes('unsplash.com')}
                       />
                     </div>
                     <div className="flex-1">
-                      <h5 className="font-medium text-gray-900">{item.product_name}</h5>
+                      <h5 className="font-medium text-gray-900">{item.product?.name}</h5>
                       <div className="text-sm text-gray-600">
                         {item.size && `Size: ${item.size}`}
                         {item.size && item.color && ' • '}
@@ -311,7 +311,7 @@ function OrderCard({
                       <div className="flex items-center justify-between mt-1">
                         <span className="text-sm text-gray-600">Qty: {item.quantity}</span>
                         <span className="font-medium text-gray-900">
-                          {formatPrice(item.price * item.quantity)}
+                          {formatPrice(item.product?.price * item.quantity)}
                         </span>
                       </div>
                     </div>
@@ -339,22 +339,12 @@ function OrderCard({
                 <h4 className="font-medium text-gray-900 mb-3">Order Summary</h4>
                 <div className="bg-white rounded-lg p-4 border border-gray-200 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Subtotal</span>
-                    <span className="text-gray-900">{formatPrice(order.subtotal)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Shipping</span>
-                    <span className="text-gray-900">
-                      {order.shipping_cost === 0 ? 'FREE' : formatPrice(order.shipping_cost)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Tax (GST)</span>
-                    <span className="text-gray-900">{formatPrice(order.tax_amount)}</span>
+                    <span className="text-gray-600">Payment</span>
+                    <span className="text-gray-900 capitalize">{order.payment_status}</span>
                   </div>
                   <div className="border-t pt-2 flex justify-between font-semibold">
                     <span className="text-gray-900">Total</span>
-                    <span className="text-gray-900">{formatPrice(order.total_amount)}</span>
+                    <span className="text-gray-900">{formatPrice(order.total || 0)}</span>
                   </div>
                 </div>
               </div>
