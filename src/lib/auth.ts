@@ -100,6 +100,50 @@ export async function signIn({ email, password }: SignInData): Promise<AuthRespo
   }
 }
 
+export async function signInWithGoogle(): Promise<{ error: AuthError | null }> {
+  try {
+    console.log('🔐 Signing in with Google')
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      }
+    })
+
+    if (error) {
+      console.error('❌ Google sign in error:', error)
+      return { error }
+    }
+
+    return { error: null }
+  } catch (catchError) {
+    console.error('💥 Google sign in catch error:', catchError)
+    return { error: catchError as AuthError }
+  }
+}
+
+export async function signInWithFacebook(): Promise<{ error: AuthError | null }> {
+  try {
+    console.log('🔐 Signing in with Facebook')
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'facebook',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      }
+    })
+
+    if (error) {
+      console.error('❌ Facebook sign in error:', error)
+      return { error }
+    }
+
+    return { error: null }
+  } catch (catchError) {
+    console.error('💥 Facebook sign in catch error:', catchError)
+    return { error: catchError as AuthError }
+  }
+}
+
 export async function signOut(): Promise<{ error: AuthError | null }> {
   try {
     console.log('🔐 Signing out user')
