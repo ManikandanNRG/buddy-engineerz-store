@@ -3,14 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-// Debug logging with more details
-console.log('🔧 Supabase Environment Check:', {
-  url: supabaseUrl,
-  urlValid: supabaseUrl?.includes('supabase.co'),
-  keyExists: !!supabaseAnonKey,
-  keyLength: supabaseAnonKey?.length,
-  keyStartsWith: supabaseAnonKey?.substring(0, 20) + '...'
-})
+// Supabase Environment Check removed for security
 
 if (!supabaseUrl) {
   console.error('❌ NEXT_PUBLIC_SUPABASE_URL is missing!')
@@ -137,13 +130,13 @@ methodsToPatch.forEach(methodName => {
   }
 })
 
-// Global error suppression as final fallback
+// Global error suppression for auth session errors
 if (typeof window !== 'undefined') {
   const originalConsoleError = console.error
   console.error = (...args: any[]) => {
     const message = args.join(' ')
     if (message.includes('Auth session missing') || message.includes('AuthSessionMissingError')) {
-      console.log('🛡️ AuthSessionMissingError suppressed from console')
+      // Quietly suppress auth session missing errors from logs
       return
     }
     originalConsoleError.apply(console, args)

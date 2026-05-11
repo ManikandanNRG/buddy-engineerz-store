@@ -108,7 +108,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // Listen for auth changes with enhanced error handling
     const { data: { subscription } } = onAuthStateChange(async (authUser) => {
-      console.log('Auth state changed:', { user: !!authUser, email: authUser?.email })
       
       if (mounted) {
         setUser(authUser)

@@ -43,7 +43,6 @@ export interface ProfileResponse {
 // Authentication functions
 export async function signUp({ email, password, name, phone }: SignUpData): Promise<AuthResponse> {
   try {
-    console.log('🔐 Signing up user:', { email, name, phone })
     
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -68,11 +67,9 @@ export async function signUp({ email, password, name, phone }: SignUpData): Prom
         await createUserProfile(data.user.id, { name, phone })
       } catch {
         // Non-critical: profile will be created/upserted after email confirmation
-        console.log('ℹ️ Profile creation deferred until after email confirmation')
       }
     }
 
-    console.log('✅ User signed up successfully:', data.user?.email)
     return { user: data.user as AuthUser, error: null }
   } catch (catchError) {
     console.error('💥 Sign up catch error:', catchError)
@@ -82,7 +79,6 @@ export async function signUp({ email, password, name, phone }: SignUpData): Prom
 
 export async function signIn({ email, password }: SignInData): Promise<AuthResponse> {
   try {
-    console.log('🔐 Signing in user:', email)
     
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -90,11 +86,9 @@ export async function signIn({ email, password }: SignInData): Promise<AuthRespo
     })
 
     if (error) {
-      console.error('❌ Sign in error:', error)
       return { user: null, error }
     }
 
-    console.log('✅ User signed in successfully:', data.user?.email)
     return { user: data.user as AuthUser, error: null }
   } catch (catchError) {
     console.error('💥 Sign in catch error:', catchError)
@@ -367,7 +361,6 @@ export async function createOrUpdateUserProfile(userId: string, profileData: { n
 // Auth state listener
 export function onAuthStateChange(callback: (user: AuthUser | null) => void) {
   return supabase.auth.onAuthStateChange((event, session) => {
-    console.log('🔐 Auth state changed:', event, session?.user?.email)
     callback(session?.user as AuthUser || null)
   })
 }
