@@ -38,6 +38,8 @@ export interface ProfileResponse {
   error: any
 }
 
+// Supabase Authentication Helper Library
+// Triggering redeploy for Social Auth configuration
 // Authentication functions
 export async function signUp({ email, password, name, phone }: SignUpData): Promise<AuthResponse> {
   try {
