@@ -207,6 +207,7 @@ export default function RootLayout({
                 <ul className="space-y-3 text-gray-300">
                   <li><Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
                   <li><Link href="/shipping" className="hover:text-white transition-colors">Shipping Info</Link></li>
+                  <li><Link href="/account/orders" className="hover:text-white transition-colors">Track Order</Link></li>
                   <li><Link href="/returns" className="hover:text-white transition-colors">Returns</Link></li>
                   <li><Link href="/size-guide" className="hover:text-white transition-colors">Size Guide</Link></li>
                   <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>

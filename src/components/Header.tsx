@@ -71,7 +71,7 @@ function UserMenu() {
               Account Settings
             </Link>
             <Link
-              href="/orders"
+              href="/account/orders"
               className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               onClick={() => setIsOpen(false)}
             >
@@ -240,7 +240,7 @@ export default function Header() {
                 My Account
               </Link>
               <Link 
-                href="/orders" 
+                href="/account/orders" 
                 className="block text-gray-700 hover:text-purple-600 transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
