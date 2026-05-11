@@ -16,6 +16,8 @@ import {
 import { useCartStore } from '@/store/cart'
 import { useWishlistStore } from '@/store/wishlist'
 import { formatPrice } from '@/lib/database'
+import toast from 'react-hot-toast'
+import { useEffect } from 'react'
 import type { Product } from '@/lib/supabase'
 
 export default function CartPage() {
@@ -30,7 +32,12 @@ export default function CartPage() {
     isHydrated
   } = useCartStore()
 
-  const { toggleItem } = useWishlistStore()
+  const { toggleItem, isInWishlist, isHydrated: isWishlistHydrated } = useWishlistStore()
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   const [removingItems, setRemovingItems] = useState<Set<string>>(new Set())
 
@@ -56,6 +63,8 @@ export default function CartPage() {
 
   const handleAddToWishlist = (product: Product) => {
     toggleItem(product)
+    const inWishlist = isInWishlist(product.id)
+    toast.success(inWishlist ? 'Added to wishlist' : 'Removed from wishlist')
   }
 
   // Filter out any invalid items (items without product data)
@@ -231,10 +240,14 @@ export default function CartPage() {
                               <div className="flex items-center gap-2 ml-4">
                                 <button
                                   onClick={() => handleAddToWishlist(product)}
-                                  className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                                  title="Add to wishlist"
+                                  className={`p-2 transition-colors ${
+                                    isClient && isWishlistHydrated && isInWishlist(product.id)
+                                      ? 'text-red-500'
+                                      : 'text-gray-400 hover:text-red-500'
+                                  }`}
+                                  title={isClient && isWishlistHydrated && isInWishlist(product.id) ? "Remove from wishlist" : "Add to wishlist"}
                                 >
-                                  <Heart className="h-4 w-4" />
+                                  <Heart className={`h-4 w-4 ${isClient && isWishlistHydrated && isInWishlist(product.id) ? 'fill-current' : ''}`} />
                                 </button>
                                 <button
                                   onClick={() => handleRemoveItem(item.id)}

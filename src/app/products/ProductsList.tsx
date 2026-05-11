@@ -1,13 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Search, Grid, List, ShoppingCart, Heart, X, Filter } from 'lucide-react'
 import { formatPrice, calculateDiscount } from '@/lib/database'
 import { useCartStore } from '@/store/cart'
+import { useWishlistStore } from '@/store/wishlist'
 import type { Product, Category } from '@/lib/supabase'
 import Link from 'next/link'
 import Image from 'next/image'
+import toast from 'react-hot-toast'
 
 interface ProductsListProps {
   initialProducts: Product[]
@@ -29,11 +31,25 @@ function ProductCard({
   isPriority?: boolean
 }) {
   const [imageError, setImageError] = useState(false)
-  const [isWishlisted, setIsWishlisted] = useState(false)
+  const { toggleItem, isInWishlist, isHydrated } = useWishlistStore()
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  const isWishlisted = isClient && isHydrated && isInWishlist(product.id)
   const discount = calculateDiscount(product.original_price || 0, product.price)
 
   const handleImageError = () => {
     setImageError(true)
+  }
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    toggleItem(product)
+    toast.success(isInWishlist(product.id) ? 'Added to wishlist' : 'Removed from wishlist')
   }
 
   if (viewMode === 'list') {
@@ -75,10 +91,11 @@ function ProductCard({
                 </h3>
               </Link>
               <button
-                onClick={() => setIsWishlisted(!isWishlisted)}
+                onClick={handleWishlistToggle}
                 className={`p-2 rounded-full ${
                   isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
                 }`}
+                title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
               >
                 <Heart className={`h-5 w-5 ${isWishlisted ? 'fill-current' : ''}`} />
               </button>
@@ -148,10 +165,11 @@ function ProductCard({
           </div>
         )}
         <button
-          onClick={() => setIsWishlisted(!isWishlisted)}
+          onClick={handleWishlistToggle}
           className={`absolute top-2 right-2 p-2 rounded-full bg-white shadow-md ${
             isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
           }`}
+          title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
         >
           <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-current' : ''}`} />
         </button>
@@ -210,6 +228,7 @@ export default function ProductsList({ initialProducts, initialCategories }: Pro
   const [showMobileFilters, setShowMobileFilters] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const productsPerPage = 12
+  const productsTopRef = useRef<HTMLDivElement>(null)
 
   const { addItem } = useCartStore()
 
@@ -227,6 +246,11 @@ export default function ProductsList({ initialProducts, initialCategories }: Pro
     if (urlSize) setSelectedSize(urlSize)
     if (urlColor) setSelectedColor(urlColor)
   }, [searchParams])
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, selectedCategory, selectedGender, selectedSize, selectedColor, priceRange, sortBy])
 
   // Filter and sort products
   let filteredProducts = [...initialProducts]
@@ -277,6 +301,7 @@ export default function ProductsList({ initialProducts, initialCategories }: Pro
     const defaultSize = product.sizes[0] || 'M'
     const defaultColor = product.colors[0] || 'Default'
     addItem(product, defaultSize, defaultColor, 1)
+    toast.success(`${product.name} added to cart!`)
   }
 
   const clearAllFilters = () => {
@@ -287,6 +312,7 @@ export default function ProductsList({ initialProducts, initialCategories }: Pro
     setSelectedColor('all')
     const prices = initialProducts.map(p => p.price)
     setPriceRange([Math.min(...prices), Math.max(...prices)])
+    setCurrentPage(1)
   }
 
   const activeFiltersCount = [
@@ -305,11 +331,16 @@ export default function ProductsList({ initialProducts, initialCategories }: Pro
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    // Scroll to the top of the products section
+    if (productsTopRef.current) {
+      productsTopRef.current.scrollIntoView({ behavior: 'smooth' })
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8" ref={productsTopRef}>
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">

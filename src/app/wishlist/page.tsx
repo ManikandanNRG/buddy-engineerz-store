@@ -7,6 +7,7 @@ import { useCartStore } from '@/store/cart'
 import { formatPrice, calculateDiscount } from '@/lib/database'
 import Image from 'next/image'
 import Link from 'next/link'
+import toast from 'react-hot-toast'
 
 export default function WishlistPage() {
   const [isClient, setIsClient] = useState(false)
@@ -22,10 +23,12 @@ export default function WishlistPage() {
     const defaultSize = product.sizes[0] || ''
     const defaultColor = product.colors[0] || ''
     addToCart(product, defaultSize, defaultColor, 1)
+    toast.success(`${product.name} added to cart!`)
   }
 
   const handleRemoveFromWishlist = (productId: string) => {
     removeItem(productId)
+    toast.success('Removed from wishlist')
   }
 
   const handleClearWishlist = () => {

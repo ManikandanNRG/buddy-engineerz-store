@@ -9,6 +9,7 @@ import { formatPrice, calculateDiscount } from '@/lib/database'
 import { useCartStore } from '@/store/cart'
 import { useWishlistStore } from '@/store/wishlist'
 import type { Product } from '@/lib/supabase'
+import toast from 'react-hot-toast'
 
 interface ProductDetailsProps {
   product: Product
@@ -20,7 +21,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
   const [selectedColor, setSelectedColor] = useState<string>(product.colors[0] || '')
   const [selectedImage, setSelectedImage] = useState<number>(0)
   const [quantity, setQuantity] = useState<number>(1)
-  const [showAddedToast, setShowAddedToast] = useState(false)
   const [isClient, setIsClient] = useState(false)
 
   const { addItem } = useCartStore()
@@ -32,8 +32,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
   const handleAddToCart = () => {
     addItem(product, selectedSize, selectedColor, quantity)
-    setShowAddedToast(true)
-    setTimeout(() => setShowAddedToast(false), 3000)
+    toast.success(`${product.name} added to cart!`)
   }
 
   const handleBuyNow = () => {
@@ -43,6 +42,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
   const handleWishlistToggle = () => {
     toggleItem(product)
+    toast.success(isInWishlist(product.id) ? 'Added to wishlist' : 'Removed from wishlist')
   }
 
   const isProductInWishlist = isClient && isHydrated ? isInWishlist(product.id) : false
@@ -50,13 +50,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Success Toast */}
-      {showAddedToast && (
-        <div className="fixed top-4 right-4 z-50 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-in slide-in-from-top-2">
-          <Check className="h-5 w-5" />
-          <span>Added to cart!</span>
-        </div>
-      )}
 
       <div className="container mx-auto px-4 py-8">
         {/* Breadcrumb */}
@@ -258,23 +251,10 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 <button
                   onClick={handleAddToCart}
                   disabled={product.stock === 0}
-                  className={`flex items-center justify-center gap-2 py-3 rounded-lg transition-all duration-300 ${
-                    showAddedToast 
-                      ? 'bg-green-600 text-white' 
-                      : 'bg-purple-600 text-white hover:bg-purple-700'
-                  } disabled:bg-gray-400 disabled:cursor-not-allowed`}
+                  className="flex items-center justify-center gap-2 py-3 rounded-lg transition-all duration-300 bg-purple-600 text-white hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
-                  {showAddedToast ? (
-                    <>
-                      <Check className="h-5 w-5 animate-in zoom-in duration-300" />
-                      <span>Added!</span>
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingCart className="h-5 w-5" />
-                      <span>Add to Cart</span>
-                    </>
-                  )}
+                  <ShoppingCart className="h-5 w-5" />
+                  <span>Add to Cart</span>
                 </button>
                 <button
                   onClick={handleBuyNow}
