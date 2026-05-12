@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { 
   ArrowLeft, 
+  ArrowRight,
   Plus, 
   Minus, 
   Trash2, 
@@ -148,20 +149,53 @@ export default function CartPage() {
 
         {/* Empty Cart State */}
         {validItems.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="bg-white rounded-lg shadow-sm p-12 max-w-md mx-auto">
-              <ShoppingBag className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Your cart is empty</h2>
-              <p className="text-gray-600 mb-8">
-                Looks like you haven't added any items to your cart yet.
-              </p>
+          <div className="max-w-2xl mx-auto text-center py-12">
+            <div className="mb-8 relative inline-block">
+              <div className="w-24 h-24 bg-purple-50 rounded-full flex items-center justify-center mx-auto">
+                <ShoppingBag className="h-12 w-12 text-purple-600" />
+              </div>
+              <div className="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center animate-bounce">
+                <span className="text-purple-600 font-bold">?</span>
+              </div>
+            </div>
+            
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Your cart is feeling a bit light</h2>
+            <p className="text-gray-600 mb-10 max-w-md mx-auto text-lg">
+              Engineering fashion waits for no one. Discover our latest collections and find your next favorite piece.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
               <Link
                 href="/products"
-                className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors inline-flex items-center gap-2"
+                className="w-full sm:w-auto bg-purple-600 text-white px-8 py-4 rounded-2xl hover:bg-purple-700 transition-all shadow-lg hover:shadow-purple-200 font-bold flex items-center justify-center gap-2 group"
               >
-                <ShoppingBag className="h-5 w-5" />
-                Start Shopping
+                Browse All Products
+                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Link>
+              <Link
+                href="/wishlist"
+                className="w-full sm:w-auto bg-white text-gray-900 px-8 py-4 rounded-2xl border-2 border-gray-100 hover:border-purple-600 hover:text-purple-600 transition-all font-bold flex items-center justify-center gap-2"
+              >
+                View Wishlist
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { name: "Men's", href: "/products?gender=men", icon: "👨‍💻" },
+                { name: "Women's", href: "/products?gender=women", icon: "👩‍💻" },
+                { name: "Best Sellers", href: "/products?sort=popular", icon: "🔥" },
+                { name: "New Arrivals", href: "/products?sort=newest", icon: "✨" }
+              ].map((cat) => (
+                <Link
+                  key={cat.name}
+                  href={cat.href}
+                  className="bg-white p-6 rounded-2xl border border-gray-100 hover:border-purple-200 hover:shadow-md transition-all group"
+                >
+                  <span className="text-2xl mb-2 block group-hover:scale-125 transition-transform">{cat.icon}</span>
+                  <span className="text-sm font-bold text-gray-900">{cat.name}</span>
+                </Link>
+              ))}
             </div>
           </div>
         ) : (

@@ -10,209 +10,12 @@ import type { Product, Category } from '@/lib/supabase'
 import Link from 'next/link'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
+import { ProductCard } from '@/components/ProductCard'
+import { ProductCardSkeleton } from '@/components/skeletons/ProductCardSkeleton'
 
 interface ProductsListProps {
   initialProducts: Product[]
   initialCategories: Category[]
-}
-
-// Product Card Component
-function ProductCard({ 
-  product, 
-  viewMode, 
-  onAddToCart,
-  index = 0,
-  isPriority = false
-}: { 
-  product: Product
-  viewMode: 'grid' | 'list'
-  onAddToCart: () => void
-  index?: number
-  isPriority?: boolean
-}) {
-  const [imageError, setImageError] = useState(false)
-  const { toggleItem, isInWishlist, isHydrated } = useWishlistStore()
-  const [isClient, setIsClient] = useState(false)
-
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
-
-  const isWishlisted = isClient && isHydrated && isInWishlist(product.id)
-  const discount = calculateDiscount(product.original_price || 0, product.price)
-
-  const handleImageError = () => {
-    setImageError(true)
-  }
-
-  const handleWishlistToggle = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    toggleItem(product)
-    toast.success(isInWishlist(product.id) ? 'Added to wishlist' : 'Removed from wishlist')
-  }
-
-  if (viewMode === 'list') {
-    return (
-      <div 
-        className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md hover:scale-[1.02] transition-all duration-300 animate-fade-up"
-        style={{ animationDelay: `${index * 100}ms` }}
-      >
-        <div className="flex flex-col md:flex-row">
-          <div className="md:w-1/3 relative">
-            <Link href={`/products/${product.id}`}>
-              {!imageError && product.images && product.images.length > 0 ? (
-                <Image
-                  src={product.images[0]}
-                  alt={product.name}
-                  width={300}
-                  height={300}
-                  className="w-full h-48 md:h-full object-cover"
-                  onError={handleImageError}
-                  priority={isPriority}
-                />
-              ) : (
-                <div className="w-full h-48 md:h-full bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-400">No Image</span>
-                </div>
-              )}
-            </Link>
-            {discount > 0 && (
-              <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-sm font-medium">
-                {discount}% OFF
-              </div>
-            )}
-          </div>
-          <div className="md:w-2/3 p-6">
-            <div className="flex justify-between items-start mb-2">
-              <Link href={`/products/${product.id}`}>
-                <h3 className="text-lg font-semibold text-gray-900 hover:text-purple-600">
-                  {product.name}
-                </h3>
-              </Link>
-              <button
-                onClick={handleWishlistToggle}
-                className={`p-2 rounded-full ${
-                  isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
-                }`}
-                title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-              >
-                <Heart className={`h-5 w-5 ${isWishlisted ? 'fill-current' : ''}`} />
-              </button>
-            </div>
-            <p className="text-gray-600 mb-4 line-clamp-2">{product.description}</p>
-            <div className="flex items-center gap-2 mb-4">
-              {product.tags.slice(0, 3).map((tag, idx) => (
-                <span
-                  key={idx}
-                  className="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-bold text-gray-900">
-                  {formatPrice(product.price)}
-                </span>
-                {product.original_price && product.original_price > product.price && (
-                  <span className="text-sm text-gray-500 line-through">
-                    {formatPrice(product.original_price)}
-                  </span>
-                )}
-              </div>
-              <button
-                onClick={onAddToCart}
-                className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
-              >
-                <ShoppingCart className="h-4 w-4" />
-                Add to Cart
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div 
-      className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md hover:scale-[1.02] transition-all duration-300 animate-fade-up"
-      style={{ animationDelay: `${index * 100}ms` }}
-    >
-      <div className="relative">
-        <Link href={`/products/${product.id}`}>
-          {!imageError && product.images && product.images.length > 0 ? (
-            <Image
-              src={product.images[0]}
-              alt={product.name}
-              width={300}
-              height={300}
-              className="w-full h-48 object-cover"
-              onError={handleImageError}
-              priority={isPriority}
-            />
-          ) : (
-            <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-              <span className="text-gray-400">No Image</span>
-            </div>
-          )}
-        </Link>
-        {discount > 0 && (
-          <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-sm font-medium">
-            {discount}% OFF
-          </div>
-        )}
-        <button
-          onClick={handleWishlistToggle}
-          className={`absolute top-2 right-2 p-2 rounded-full bg-white shadow-md ${
-            isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
-          }`}
-          title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-        >
-          <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-current' : ''}`} />
-        </button>
-      </div>
-      <div className="p-4">
-        <Link href={`/products/${product.id}`}>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-purple-600">
-            {product.name}
-          </h3>
-        </Link>
-        <p className="text-gray-600 text-sm mb-3 line-clamp-2">{product.description}</p>
-        <div className="flex items-center gap-1 mb-3">
-          {product.tags.slice(0, 2).map((tag, idx) => (
-            <span
-              key={idx}
-              className="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-bold text-gray-900">
-              {formatPrice(product.price)}
-            </span>
-            {product.original_price && product.original_price > product.price && (
-              <span className="text-sm text-gray-500 line-through">
-                {formatPrice(product.original_price)}
-              </span>
-            )}
-          </div>
-          <button
-            onClick={onAddToCart}
-            className="flex items-center gap-1 bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm"
-          >
-            <ShoppingCart className="h-4 w-4" />
-            Add
-          </button>
-        </div>
-      </div>
-    </div>
-  )
 }
 
 export default function ProductsList({ initialProducts, initialCategories }: ProductsListProps) {
@@ -227,6 +30,7 @@ export default function ProductsList({ initialProducts, initialCategories }: Pro
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showMobileFilters, setShowMobileFilters] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [isLoading, setIsLoading] = useState(false)
   const productsPerPage = 12
   const productsTopRef = useRef<HTMLDivElement>(null)
 
@@ -513,7 +317,17 @@ export default function ProductsList({ initialProducts, initialCategories }: Pro
       </div>
 
       {/* Products Grid/List */}
-      {filteredProducts.length === 0 ? (
+      {isLoading ? (
+        <div className={`grid gap-6 ${
+          viewMode === 'grid' 
+            ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+            : 'grid-cols-1'
+        }`}>
+          {[...Array(productsPerPage)].map((_, i) => (
+            <ProductCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : filteredProducts.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-gray-400 mb-4">
             <Search className="h-16 w-16 mx-auto" />
@@ -541,7 +355,6 @@ export default function ProductsList({ initialProducts, initialCategories }: Pro
                 key={product.id}
                 product={product}
                 viewMode={viewMode}
-                onAddToCart={() => handleAddToCart(product)}
                 index={index}
                 isPriority={index < 4}
               />

@@ -8,6 +8,7 @@ import { formatPrice, calculateDiscount } from '@/lib/database'
 import Image from 'next/image'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
+import { ProductCard } from '@/components/ProductCard'
 
 export default function WishlistPage() {
   const [isClient, setIsClient] = useState(false)
@@ -18,18 +19,6 @@ export default function WishlistPage() {
     setIsClient(true)
   }, [])
 
-  const handleAddToCart = (product: any) => {
-    // Add to cart with default size and color
-    const defaultSize = product.sizes[0] || ''
-    const defaultColor = product.colors[0] || ''
-    addToCart(product, defaultSize, defaultColor, 1)
-    toast.success(`${product.name} added to cart!`)
-  }
-
-  const handleRemoveFromWishlist = (productId: string) => {
-    removeItem(productId)
-    toast.success('Removed from wishlist')
-  }
 
   const handleClearWishlist = () => {
     if (confirm('Are you sure you want to clear your entire wishlist?')) {
@@ -99,134 +88,57 @@ export default function WishlistPage() {
 
         {/* Empty State */}
         {items.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="bg-white rounded-lg shadow-sm p-12 max-w-md mx-auto">
-              <Heart className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Your wishlist is empty</h2>
-              <p className="text-gray-600 mb-8">
-                Save items you love by clicking the heart icon on any product.
-              </p>
-              <Link
-                href="/products"
-                className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors inline-flex items-center gap-2"
-              >
-                <Package className="h-5 w-5" />
-                Browse Products
-              </Link>
+          <div className="max-w-2xl mx-auto text-center py-12">
+            <div className="mb-8 relative inline-block">
+              <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mx-auto">
+                <Heart className="h-12 w-12 text-red-500" />
+              </div>
+              <div className="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center animate-pulse">
+                <Heart className="h-4 w-4 text-red-500 fill-current" />
+              </div>
+            </div>
+            
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Your wishlist is waiting</h2>
+            <p className="text-gray-600 mb-10 max-w-md mx-auto text-lg">
+              Save the engineering fashion you love most and we'll keep it safe for you right here.
+            </p>
+            
+            <Link
+              href="/products"
+              className="inline-flex items-center gap-2 bg-purple-600 text-white px-8 py-4 rounded-2xl hover:bg-purple-700 transition-all shadow-lg hover:shadow-purple-200 font-bold mb-16"
+            >
+              Discover Products
+            </Link>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { name: "Men's", href: "/products?gender=men", icon: "👨‍💻" },
+                { name: "Women's", href: "/products?gender=women", icon: "👩‍💻" },
+                { name: "Best Sellers", href: "/products?sort=popular", icon: "🔥" },
+                { name: "New Arrivals", href: "/products?sort=newest", icon: "✨" }
+              ].map((cat) => (
+                <Link
+                  key={cat.name}
+                  href={cat.href}
+                  className="bg-white p-6 rounded-2xl border border-gray-100 hover:border-purple-200 hover:shadow-md transition-all group"
+                >
+                  <span className="text-2xl mb-2 block group-hover:scale-125 transition-transform">{cat.icon}</span>
+                  <span className="text-sm font-bold text-gray-900">{cat.name}</span>
+                </Link>
+              ))}
             </div>
           </div>
         ) : (
           /* Wishlist Grid */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {items.map((product) => {
-              const discount = calculateDiscount(product.original_price || 0, product.price)
-              
-              return (
-                <div key={product.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow group">
-                  <div className="relative">
-                    <div className="aspect-square relative">
-                      <Image
-                        src={product.images[0] || '/placeholder-product.jpg'}
-                        alt={product.name}
-                        fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        unoptimized={product.images[0]?.includes('unsplash.com')}
-                      />
-                    </div>
-                    
-                    {/* Remove from wishlist button */}
-                    <button
-                      onClick={() => handleRemoveFromWishlist(product.id)}
-                      className="absolute top-3 right-3 p-2 bg-white/80 hover:bg-white rounded-full text-red-500 hover:text-red-600 transition-colors shadow-sm"
-                      title="Remove from wishlist"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                    
-                    {product.featured && (
-                      <span className="absolute top-3 left-3 bg-purple-600 text-white text-xs px-2 py-1 rounded">
-                        Featured
-                      </span>
-                    )}
-                    
-                    {discount > 0 && (
-                      <span className="absolute bottom-3 left-3 bg-red-500 text-white text-xs px-2 py-1 rounded">
-                        -{discount}% OFF
-                      </span>
-                    )}
-                  </div>
-                  
-                  <div className="p-4">
-                    <Link href={`/products/${product.id}`}>
-                      <h3 className="font-semibold text-gray-900 hover:text-purple-600 transition-colors mb-2 line-clamp-2">
-                        {product.name}
-                      </h3>
-                    </Link>
-                    
-                    <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                      {product.description}
-                    </p>
-                    
-                    {/* Tags */}
-                    <div className="flex items-center gap-1 mb-3">
-                      {product.tags.slice(0, 2).map((tag) => (
-                        <span
-                          key={tag}
-                          className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                    
-                    {/* Price */}
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="text-lg font-bold text-gray-900">
-                        {formatPrice(product.price)}
-                      </span>
-                      {product.original_price && product.original_price > product.price && (
-                        <span className="text-sm text-gray-500 line-through">
-                          {formatPrice(product.original_price)}
-                        </span>
-                      )}
-                    </div>
-                    
-                    {/* Actions */}
-                    <div className="space-y-2">
-                      <button
-                        onClick={() => handleAddToCart(product)}
-                        disabled={product.stock === 0}
-                        className="w-full flex items-center justify-center gap-2 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-                      >
-                        <ShoppingCart className="h-4 w-4" />
-                        {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
-                      </button>
-                      
-                      <Link
-                        href={`/products/${product.id}`}
-                        className="w-full flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        View Details
-                      </Link>
-                    </div>
-                    
-                    {/* Stock status */}
-                    <div className="mt-2 text-center">
-                      {product.stock > 0 ? (
-                        <span className="text-xs text-green-600">
-                          {product.stock} in stock
-                        </span>
-                      ) : (
-                        <span className="text-xs text-red-600">
-                          Out of stock
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
+            {items.map((product, index) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                viewMode="grid"
+                index={index}
+              />
+            ))}
           </div>
         )}
 

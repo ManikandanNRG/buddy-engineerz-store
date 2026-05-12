@@ -156,6 +156,80 @@ export default function OrdersPage() {
   )
 }
 
+function OrderTimeline({ status }: { status: Order['status'] }) {
+  const steps = [
+    { key: 'pending', label: 'Order Placed', icon: Package },
+    { key: 'confirmed', label: 'Confirmed', icon: CheckCircle },
+    { key: 'processing', label: 'Processing', icon: Loader2 },
+    { key: 'shipped', label: 'Shipped', icon: Truck },
+    { key: 'delivered', label: 'Delivered', icon: CheckCircle },
+  ]
+
+  if (status === 'cancelled') {
+    return (
+      <div className="bg-red-50 border border-red-100 rounded-lg p-4 flex items-center gap-3">
+        <X className="h-5 w-5 text-red-600" />
+        <span className="text-red-700 font-medium">This order has been cancelled</span>
+      </div>
+    )
+  }
+
+  const getStepStatus = (stepKey: string) => {
+    const statusOrder = ['pending', 'confirmed', 'processing', 'shipped', 'delivered']
+    const currentIdx = statusOrder.indexOf(status)
+    const stepIdx = statusOrder.indexOf(stepKey)
+
+    if (stepIdx < currentIdx) return 'completed'
+    if (stepIdx === currentIdx) return 'current'
+    return 'upcoming'
+  }
+
+  return (
+    <div className="relative pt-4 pb-2">
+      <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gray-200 -translate-y-1/2 hidden md:block" />
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center relative gap-6 md:gap-0">
+        {steps.map((step, idx) => {
+          const stepStatus = getStepStatus(step.key)
+          const Icon = step.icon
+
+          return (
+            <div key={step.key} className="flex md:flex-col items-center gap-4 md:gap-2 relative z-10 w-full md:w-auto">
+              {/* Progress Line for Mobile */}
+              {idx < steps.length - 1 && (
+                <div className="absolute left-4 top-8 w-0.5 h-full bg-gray-200 md:hidden" />
+              )}
+              
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-colors duration-500 ${
+                stepStatus === 'completed' ? 'bg-green-600 border-green-600 text-white' :
+                stepStatus === 'current' ? 'bg-white border-purple-600 text-purple-600 ring-4 ring-purple-50' :
+                'bg-white border-gray-300 text-gray-300'
+              }`}>
+                {stepStatus === 'completed' ? (
+                  <CheckCircle className="h-5 w-5" />
+                ) : (
+                  <Icon className={`h-4 w-4 ${stepStatus === 'current' && step.key === 'processing' ? 'animate-spin' : ''}`} />
+                )}
+              </div>
+              <div className="flex flex-col md:items-center">
+                <span className={`text-xs font-bold uppercase tracking-wider ${
+                  stepStatus === 'completed' ? 'text-green-600' :
+                  stepStatus === 'current' ? 'text-purple-600' :
+                  'text-gray-400'
+                }`}>
+                  {step.label}
+                </span>
+                {stepStatus === 'current' && (
+                  <span className="text-[10px] text-gray-500 md:text-center">In progress</span>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 function OrderCard({ 
   order, 
   onCancel, 
@@ -255,7 +329,7 @@ function OrderCard({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mb-6">
           <button
             onClick={() => setExpanded(!expanded)}
             className="flex items-center gap-2 text-purple-600 hover:text-purple-700 text-sm font-medium"
@@ -279,6 +353,9 @@ function OrderCard({
             </button>
           )}
         </div>
+
+        {/* Visual Timeline */}
+        <OrderTimeline status={order.status} />
       </div>
 
       {/* Expanded Details */}
