@@ -47,12 +47,97 @@ function generateOrderNumber(): string {
   return `ORD-${dateStr}-${randomStr}`
 }
 
+// Check if all items in the cart have sufficient stock
+export async function checkStockAvailability(items: CartItem[]): Promise<{
+  available: boolean
+  insufficientItems: Array<{ product_id: string; requested: number; available: number }>
+  error: any
+}> {
+  try {
+    console.log('🔍 Checking stock availability for', items.length, 'items')
+
+    const itemsPayload = items.map(item => ({
+      product: { id: item.product.id },
+      quantity: item.quantity,
+    }))
+
+    const { data, error } = await supabase.rpc('check_stock_availability', {
+      p_items: JSON.stringify(itemsPayload),
+    })
+
+    if (error) {
+      console.error('❌ Stock check RPC error:', error)
+      // If the RPC doesn't exist yet, allow the order to proceed (graceful degradation)
+      if (error.code === 'PGRST202' || error.message?.includes('function') ) {
+        console.warn('⚠️ Stock check function not found — skipping validation. Please run decrement-stock-migration.sql.')
+        return { available: true, insufficientItems: [], error: null }
+      }
+      return { available: false, insufficientItems: [], error }
+    }
+
+    return {
+      available: data.available,
+      insufficientItems: data.insufficient_items || [],
+      error: null,
+    }
+  } catch (catchError) {
+    console.error('💥 Stock check catch error:', catchError)
+    // Graceful degradation — don't block the order if check itself fails
+    return { available: true, insufficientItems: [], error: null }
+  }
+}
+
+// Decrement stock for all ordered items after successful order creation
+async function decrementStockForOrder(items: CartItem[]): Promise<void> {
+  console.log('📉 Decrementing stock for', items.length, 'items')
+
+  const decrementPromises = items.map(item =>
+    supabase.rpc('decrement_product_stock', {
+      p_product_id: item.product.id,
+      p_quantity: item.quantity,
+    })
+  )
+
+  const results = await Promise.allSettled(decrementPromises)
+
+  results.forEach((result, index) => {
+    const item = items[index]
+    if (result.status === 'rejected') {
+      console.error(`❌ Failed to decrement stock for product ${item.product.id} (${item.product.name}):`, result.reason)
+    } else if (result.value.error) {
+      console.error(`❌ Stock decrement error for product ${item.product.id} (${item.product.name}):`, result.value.error)
+    } else {
+      console.log(`✅ Stock decremented for ${item.product.name} by ${item.quantity}`)
+    }
+  })
+}
+
 export async function createOrder(orderData: CreateOrderData): Promise<OrderResponse> {
   try {
     console.log('📦 Creating order for user:', orderData.user_id)
-    
+
+    // Step 1: Check stock availability before creating the order
+    const stockCheck = await checkStockAvailability(orderData.items)
+
+    if (!stockCheck.available) {
+      const itemNames = stockCheck.insufficientItems.map(item => {
+        const cartItem = orderData.items.find(i => i.product.id === item.product_id)
+        return `${cartItem?.product.name || 'Unknown'} (requested: ${item.requested}, available: ${item.available})`
+      })
+      console.error('❌ Insufficient stock for items:', itemNames)
+      return {
+        order: null,
+        error: {
+          message: `Insufficient stock for: ${itemNames.join(', ')}. Please update your cart.`,
+          code: 'INSUFFICIENT_STOCK',
+          insufficientItems: stockCheck.insufficientItems,
+        },
+      }
+    }
+
+    // Step 2: Create the order
     const orderNumber = generateOrderNumber()
-    
+
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
@@ -63,7 +148,7 @@ export async function createOrder(orderData: CreateOrderData): Promise<OrderResp
         items: JSON.parse(JSON.stringify(orderData.items)),
         shipping_address: orderData.shipping_address,
         payment_status: 'pending',
-        payment_id: null
+        payment_id: null,
       })
       .select()
       .single()
@@ -74,6 +159,14 @@ export async function createOrder(orderData: CreateOrderData): Promise<OrderResp
     }
 
     console.log('✅ Order created successfully:', order.id)
+
+    // Step 3: Decrement stock — run after order is committed
+    // We don't await this blocking the response; failures are logged but order is NOT rolled back.
+    // Stock can be reconciled manually if decrement fails.
+    decrementStockForOrder(orderData.items).catch(err => {
+      console.error('💥 Critical: Stock decrement failed after order creation:', order.id, err)
+    })
+
     return { order, error: null }
   } catch (catchError) {
     console.error('💥 Create order catch error:', catchError)

@@ -48,7 +48,7 @@ export default function AdminDashboardPage() {
 
       const { data: customers } = await supabase
         .from('user_profiles')
-        .select('id, email, created_at')
+        .select('id, created_at')
 
       const totalOrders = orders?.length || 0
       const totalRevenue = orders?.reduce((sum, order) => sum + (order.total || 0), 0) || 0

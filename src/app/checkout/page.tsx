@@ -281,10 +281,17 @@ export default function CheckoutPage() {
         shipping_cost: shipping,
         tax_amount: tax,
         total_amount: total,
-        payment_method: 'COD' // Using COD for simulation
+        payment_method: 'COD'
       }
 
       const { order, error: orderError } = await createOrder(orderData)
+
+      // Handle stock-specific errors with a friendly message
+      if (orderError?.code === 'INSUFFICIENT_STOCK') {
+        setError(orderError.message + ' Please go back to your cart and remove or reduce the quantity of out-of-stock items.')
+        setSubmitting(false)
+        return
+      }
 
       if (orderError || !order) {
         throw new Error(orderError?.message || 'Failed to create order')
@@ -312,6 +319,7 @@ export default function CheckoutPage() {
       setSubmitting(false)
     }
   }
+
 
   if (authLoading || loading || cartLoading || !cartHydrated) {
     return (

@@ -10,15 +10,15 @@ import { toast } from 'react-hot-toast'
 interface Customer {
   id: string
   email: string
-  name?: string
-  phone?: string
+  name: string | null
+  phone: string | null
   created_at: string
   updated_at: string
-  last_sign_in_at?: string
-  email_confirmed_at?: string
-  role?: string
-  total_orders?: number
-  total_spent?: number
+  last_sign_in_at: string | null
+  email_confirmed_at: string | null
+  role: string | null
+  total_orders: number
+  total_spent: number
 }
 
 interface CustomerOrder {
@@ -42,71 +42,42 @@ export default function AdminCustomersPage() {
   const [sortBy, setSortBy] = useState('created_at')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
 
-  // Optimized fetch customers with stats
+  // Single query — customer info + order stats in one RPC call (no N+1)
   const fetchCustomers = useCallback(async () => {
     try {
       setCustomersLoading(true)
       console.log('🔍 Fetching customers...')
-      
-      // Fetch users from auth.users table via user_profiles
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .order(sortBy, { ascending: sortOrder === 'asc' })
 
-      if (profilesError) {
-        console.error('❌ Profiles fetch error:', profilesError)
-        
-        if (profilesError.code === '42P01') {
-          toast.error('User profiles table does not exist.')
-          setCustomers([])
-          return
-        }
-        
-        throw profilesError
+      const { data, error } = await supabase.rpc('get_admin_customers')
+
+      if (error) {
+        console.error('❌ get_admin_customers error:', error)
+        toast.error('Failed to fetch customers. Please run admin-customers-view-migration.sql in Supabase.')
+        setCustomers([])
+        return
       }
 
-      console.log('✅ Profiles fetched:', profilesData?.length || 0)
+      console.log('✅ Customers fetched:', data?.length || 0)
 
-      // Enhance with order statistics
-      const customersWithStats = await Promise.all(
-        (profilesData || []).map(async (profile) => {
-          try {
-            // Get order statistics
-            const { data: ordersData } = await supabase
-              .from('orders')
-              .select('total, status')
-              .eq('user_id', profile.id)
+      // Apply client-side sort based on selected sort field
+      const sorted = [...(data || [])].sort((a: Customer, b: Customer) => {
+        let valA: any, valB: any
+        switch (sortBy) {
+          case 'name':         valA = a.name || '';         valB = b.name || '';         break
+          case 'email':        valA = a.email || '';        valB = b.email || '';        break
+          case 'total_spent':  valA = a.total_spent || 0;  valB = b.total_spent || 0;  break
+          case 'total_orders': valA = a.total_orders || 0; valB = b.total_orders || 0; break
+          default:             valA = a.created_at;         valB = b.created_at;         break
+        }
+        if (valA < valB) return sortOrder === 'asc' ? -1 : 1
+        if (valA > valB) return sortOrder === 'asc' ? 1 : -1
+        return 0
+      })
 
-            const totalOrders = ordersData?.length || 0
-            const totalSpent = ordersData?.reduce((sum, order) => sum + (order.total || 0), 0) || 0
-
-            return {
-              ...profile,
-              total_orders: totalOrders,
-              total_spent: totalSpent
-            }
-          } catch (error) {
-            console.warn('⚠️ Could not fetch orders for user:', profile.id)
-            return {
-              ...profile,
-              total_orders: 0,
-              total_spent: 0
-            }
-          }
-        })
-      )
-
-      setCustomers(customersWithStats)
+      setCustomers(sorted)
     } catch (error: any) {
       console.error('💥 Error fetching customers:', error)
-      
-      if (error?.code === '42P01') {
-        toast.error('Required tables do not exist.')
-      } else {
-        toast.error('Failed to fetch customers')
-      }
-      
+      toast.error('Failed to fetch customers')
       setCustomers([])
     } finally {
       setCustomersLoading(false)
