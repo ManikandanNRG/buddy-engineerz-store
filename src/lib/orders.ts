@@ -305,6 +305,7 @@ export async function cancelOrder(orderId: string, userId: string): Promise<Orde
   try {
     console.log('📦 Cancelling order:', orderId)
     
+    // Perform the cancellation update
     const { data: order, error } = await supabase
       .from('orders')
       .update({ 
@@ -320,6 +321,25 @@ export async function cancelOrder(orderId: string, userId: string): Promise<Orde
     if (error) {
       console.error('❌ Cancel order error:', error)
       return { order: null, error }
+    }
+
+    if (order && order.items) {
+      // Restore stock for all cancelled items in the background
+      console.log('📈 Restoring stock for cancelled order items:', order.items.length)
+      const incrementPromises = order.items.map((item: any) =>
+        supabase.rpc('increment_product_stock', {
+          p_product_id: item.product.id,
+          p_quantity: item.quantity,
+        })
+      )
+
+      Promise.allSettled(incrementPromises).then(results => {
+        results.forEach((result, index) => {
+          if (result.status === 'rejected' || (result.status === 'fulfilled' && result.value.error)) {
+            console.error(`❌ Failed to restore stock for item ${index}:`, result)
+          }
+        })
+      })
     }
 
     console.log('✅ Order cancelled successfully')

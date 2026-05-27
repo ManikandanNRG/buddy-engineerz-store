@@ -46,6 +46,8 @@ export default function AdminProductsPage() {
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
   const [uploadingImages, setUploadingImages] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 12
 
   const [formData, setFormData] = useState({
     name: '',
@@ -355,6 +357,13 @@ export default function AdminProductsPage() {
     outOfStock: products.filter(p => p.stock === 0).length
   }
 
+  // Pagination logic
+  const totalPages = Math.ceil(products.length / itemsPerPage)
+  const paginatedProducts = products.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -439,7 +448,7 @@ export default function AdminProductsPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
-                  {products.map((product) => {
+                  {paginatedProducts.map((product) => {
                     const stockStatus = getStockStatus(product.stock)
                     return (
                       <div key={product.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
@@ -498,6 +507,68 @@ export default function AdminProductsPage() {
                       </div>
                     )
                   })}
+                </div>
+              )}
+              
+              {/* Pagination Controls */}
+              {!productsLoading && products.length > 0 && totalPages > 1 && (
+                <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200 bg-gray-50">
+                  <div className="flex justify-between flex-1 sm:hidden">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      Next
+                    </button>
+                  </div>
+                  <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm text-gray-700">
+                        Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-medium">{Math.min(currentPage * itemsPerPage, products.length)}</span> of <span className="font-medium">{products.length}</span> results
+                      </p>
+                    </div>
+                    <div>
+                      <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                          disabled={currentPage === 1}
+                          className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          <span className="sr-only">Previous</span>
+                          &larr;
+                        </button>
+                        {[...Array(totalPages)].map((_, i) => (
+                          <button
+                            key={i + 1}
+                            onClick={() => setCurrentPage(i + 1)}
+                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                              currentPage === i + 1
+                                ? 'z-10 bg-purple-50 border-purple-500 text-purple-600'
+                                : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                            }`}
+                          >
+                            {i + 1}
+                          </button>
+                        ))}
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                          disabled={currentPage === totalPages}
+                          className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          <span className="sr-only">Next</span>
+                          &rarr;
+                        </button>
+                      </nav>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
