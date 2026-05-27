@@ -39,6 +39,7 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [step, setStep] = useState<'address' | 'payment' | 'confirmation'>('address')
+  const [paymentMethod, setPaymentMethod] = useState<'RAZORPAY' | 'UPI' | 'COD'>('RAZORPAY')
 
   // Address form state
   const [addressForm, setAddressForm] = useState<AddressInput>({
@@ -281,7 +282,7 @@ export default function CheckoutPage() {
         shipping_cost: shipping,
         tax_amount: tax,
         total_amount: total,
-        payment_method: 'COD'
+        payment_method: paymentMethod
       }
 
       const { order, error: orderError } = await createOrder(orderData)
@@ -756,12 +757,62 @@ export default function CheckoutPage() {
 
                 {/* Payment Options */}
                 <div className="space-y-4 mb-6">
-                  <div className="border border-purple-600 bg-purple-50 rounded-lg p-4">
+                  {/* Razorpay Option */}
+                  <div 
+                    className={`border rounded-lg p-4 cursor-pointer transition-colors ${paymentMethod === 'RAZORPAY' ? 'border-purple-600 bg-purple-50' : 'border-gray-200 hover:border-gray-300'}`}
+                    onClick={() => setPaymentMethod('RAZORPAY')}
+                  >
                     <div className="flex items-center gap-3">
-                      <CreditCard className="h-5 w-5 text-purple-600" />
+                      <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${paymentMethod === 'RAZORPAY' ? 'border-purple-600' : 'border-gray-400'}`}>
+                        {paymentMethod === 'RAZORPAY' && <div className="w-3 h-3 rounded-full bg-purple-600" />}
+                      </div>
+                      <CreditCard className={`h-5 w-5 ${paymentMethod === 'RAZORPAY' ? 'text-purple-600' : 'text-gray-500'}`} />
                       <div>
-                        <h3 className="font-medium text-gray-900">Razorpay</h3>
-                        <p className="text-sm text-gray-600">Pay securely with cards, UPI, wallets & more</p>
+                        <h3 className={`font-medium ${paymentMethod === 'RAZORPAY' ? 'text-purple-900' : 'text-gray-900'}`}>Razorpay (Cards, Wallets, NetBanking)</h3>
+                        <p className="text-sm text-gray-600">Secure payment gateway</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Direct UPI Option */}
+                  <div 
+                    className={`border rounded-lg p-4 cursor-pointer transition-colors ${paymentMethod === 'UPI' ? 'border-purple-600 bg-purple-50' : 'border-gray-200 hover:border-gray-300'}`}
+                    onClick={() => setPaymentMethod('UPI')}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${paymentMethod === 'UPI' ? 'border-purple-600' : 'border-gray-400'}`}>
+                        {paymentMethod === 'UPI' && <div className="w-3 h-3 rounded-full bg-purple-600" />}
+                      </div>
+                      <div className="flex items-center justify-center h-5 w-5 text-gray-500 font-bold text-xs border border-gray-500 rounded">UPI</div>
+                      <div>
+                        <h3 className={`font-medium ${paymentMethod === 'UPI' ? 'text-purple-900' : 'text-gray-900'}`}>Direct UPI Transfer</h3>
+                        <p className="text-sm text-gray-600">Scan QR Code or pay directly to our UPI ID</p>
+                      </div>
+                    </div>
+                    {paymentMethod === 'UPI' && (
+                      <div className="mt-4 ml-8 p-3 bg-white border border-purple-100 rounded-md">
+                        <p className="text-sm text-gray-700 font-medium mb-2">Scan QR Code or enter UPI ID:</p>
+                        <p className="text-xs text-gray-500 mb-2">Our team will manually verify your payment after you place the order.</p>
+                        <div className="bg-gray-100 p-2 rounded text-center font-mono text-sm border border-gray-200">
+                          buddy-engineerz@upi
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Cash on Delivery Option */}
+                  <div 
+                    className={`border rounded-lg p-4 cursor-pointer transition-colors ${paymentMethod === 'COD' ? 'border-purple-600 bg-purple-50' : 'border-gray-200 hover:border-gray-300'}`}
+                    onClick={() => setPaymentMethod('COD')}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${paymentMethod === 'COD' ? 'border-purple-600' : 'border-gray-400'}`}>
+                        {paymentMethod === 'COD' && <div className="w-3 h-3 rounded-full bg-purple-600" />}
+                      </div>
+                      <Truck className={`h-5 w-5 ${paymentMethod === 'COD' ? 'text-purple-600' : 'text-gray-500'}`} />
+                      <div>
+                        <h3 className={`font-medium ${paymentMethod === 'COD' ? 'text-purple-900' : 'text-gray-900'}`}>Cash on Delivery (COD)</h3>
+                        <p className="text-sm text-gray-600">Pay when your order is delivered to your doorstep</p>
                       </div>
                     </div>
                   </div>
