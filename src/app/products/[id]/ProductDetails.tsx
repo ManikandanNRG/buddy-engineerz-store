@@ -1,38 +1,54 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ShoppingCart, Heart, Share2, Star, Truck, Shield, RotateCcw, Plus, Minus, Check } from 'lucide-react'
+import { ShoppingCart, Heart, Share2, Star, Truck, Shield, RotateCcw, Plus, Minus, Check, ChevronUp } from 'lucide-react'
 import { formatPrice, calculateDiscount } from '@/lib/database'
 import { useCartStore } from '@/store/cart'
 import { useWishlistStore } from '@/store/wishlist'
 import type { Product } from '@/lib/supabase'
 import toast from 'react-hot-toast'
+import { ProductCard } from '@/components/ProductCard'
 
 interface ProductDetailsProps {
   product: Product
+  relatedProducts?: Product[]
 }
 
-export default function ProductDetails({ product }: ProductDetailsProps) {
+export default function ProductDetails({ product, relatedProducts = [] }: ProductDetailsProps) {
   const router = useRouter()
   const [selectedSize, setSelectedSize] = useState<string>(product.sizes[0] || '')
   const [selectedColor, setSelectedColor] = useState<string>(product.colors[0] || '')
   const [selectedImage, setSelectedImage] = useState<number>(0)
   const [quantity, setQuantity] = useState<number>(1)
   const [isClient, setIsClient] = useState(false)
+  const [showStickyBar, setShowStickyBar] = useState(false)
+  const mainAtcRef = useRef<HTMLDivElement>(null)
 
-  const { addItem } = useCartStore()
+  const { addItem, openCart } = useCartStore()
   const { toggleItem, isInWishlist, isHydrated } = useWishlistStore()
 
   useEffect(() => {
     setIsClient(true)
   }, [])
 
+  // Show sticky bar when main ATC scrolls out of view
+  useEffect(() => {
+    if (!mainAtcRef.current) return
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowStickyBar(!entry.isIntersecting),
+      { threshold: 0, rootMargin: '-60px 0px 0px 0px' }
+    )
+    observer.observe(mainAtcRef.current)
+    return () => observer.disconnect()
+  }, [])
+
   const handleAddToCart = () => {
     addItem(product, selectedSize, selectedColor, quantity)
     toast.success(`${product.name} added to cart!`)
+    openCart()
   }
 
   const handleBuyNow = () => {
@@ -246,7 +262,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             </div>
 
             {/* Action Buttons */}
-            <div className="space-y-4">
+            <div className="space-y-4" ref={mainAtcRef}>
               <div className="grid grid-cols-2 gap-4">
                 <button
                   onClick={handleAddToCart}
@@ -310,13 +326,69 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         </div>
 
         {/* Related Products Section */}
-        <div className="mt-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8">You might also like</h2>
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <p className="text-gray-600">
-              Related products will be displayed here based on category and tags.
-            </p>
+        <div className="mt-20">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <p className="text-purple-600 text-sm font-bold uppercase tracking-widest mb-2">More to explore</p>
+              <h2 className="text-3xl font-black text-gray-900">You might also like</h2>
+            </div>
           </div>
+          {relatedProducts.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {relatedProducts.map((rp, i) => (
+                <ProductCard key={rp.id} product={rp} viewMode="grid" index={i} />
+              ))}
+            </div>
+          ) : (
+            <div className="bg-gray-50 rounded-2xl p-12 text-center">
+              <p className="text-gray-400">No related products found.</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ─── STICKY ATC BAR ─────────────────────────────── */}
+      <div
+        className={`fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-2xl transition-transform duration-300 ${
+          showStickyBar ? 'translate-y-0' : 'translate-y-full'
+        }`}
+      >
+        <div className="container mx-auto px-4 py-3 flex items-center gap-4">
+          <img
+            src={product.images[0]}
+            alt={product.name}
+            className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
+          />
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-gray-900 text-sm truncate">{product.name}</p>
+            <p className="text-purple-600 font-black">{formatPrice(product.price)}</p>
+          </div>
+          {/* Compact size selector */}
+          {product.sizes.length > 0 && (
+            <div className="hidden sm:flex gap-1.5">
+              {product.sizes.map(s => (
+                <button
+                  key={s}
+                  onClick={() => setSelectedSize(s)}
+                  className={`px-2.5 py-1.5 text-xs font-bold rounded-lg border transition-all ${
+                    selectedSize === s
+                      ? 'bg-purple-600 text-white border-purple-600'
+                      : 'border-gray-200 text-gray-600 hover:border-purple-400'
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+          <button
+            onClick={handleAddToCart}
+            disabled={product.stock === 0}
+            className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all disabled:bg-gray-400 disabled:cursor-not-allowed whitespace-nowrap shadow-lg shadow-purple-200"
+          >
+            <ShoppingCart className="w-4 h-4" />
+            Add to Cart
+          </button>
         </div>
       </div>
     </div>

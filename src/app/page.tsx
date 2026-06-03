@@ -1,362 +1,285 @@
-'use client'
-
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { ArrowRight, Code, Cpu, Zap, Shield, Truck, RefreshCw } from 'lucide-react'
+import { ArrowRight, Code, Cpu, Zap, Shield, Truck, RefreshCw, Star, Users, Award, Package } from 'lucide-react'
+import { createClient } from '@supabase/supabase-js'
+import HomepageClient from './HomepageClient'
+import type { Product } from '@/lib/supabase'
 import NewsletterSubscription from '@/components/NewsletterSubscription'
-import { useCartStore } from '@/store/cart'
-import toast from 'react-hot-toast'
-import Head from 'next/head'
 
-export default function HomePage() {
-  const { addItem } = useCartStore()
-  const categories = [
-    {
-      id: 'tshirts',
-      name: 'T-Shirts',
-      description: 'Code in comfort',
-      image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=400&fit=crop&crop=center',
-      href: '/products?category=tshirts'
-    },
-    {
-      id: 'hoodies',
-      name: 'Hoodies',
-      description: 'Debug mode activated',
-      image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=300&h=400&fit=crop&crop=center',
-      href: '/products?category=hoodies'
-    },
-    {
-      id: 'accessories',
-      name: 'Accessories',
-      description: 'Level up your setup',
-      image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=300&h=400&fit=crop&crop=center',
-      href: '/products?category=accessories'
-    }
-  ]
+// Server-side Supabase for static data fetch
+const supabaseServer = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
-  const featuredProducts = [
-    {
-      id: 'featured-1',
-      name: 'Algorithm Tee',
-      description: 'Premium cotton tee with minimalist algorithm design',
-      price: 999,
-      originalPrice: 1299,
-      image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop&crop=center',
-      badge: 'Best Seller',
-      category: 'tshirts',
-      sizes: ['S', 'M', 'L', 'XL'],
-      colors: ['Black', 'White'],
-      stock: 10
-    },
-    {
-      id: 'featured-2',
-      name: 'Code Hoodie',
-      description: 'Comfortable hoodie perfect for coding sessions',
-      price: 1999,
-      originalPrice: 2499,
-      image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop&crop=center',
-      badge: 'New',
-      category: 'hoodies',
-      sizes: ['S', 'M', 'L', 'XL'],
-      colors: ['Gray', 'Black'],
-      stock: 15
-    },
-    {
-      id: 'featured-3',
-      name: 'Binary Mug',
-      description: 'Start your day with binary coffee',
-      price: 599,
-      originalPrice: 799,
-      image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=400&fit=crop&crop=center',
-      badge: 'Limited',
-      category: 'accessories',
-      sizes: ['One Size'],
-      colors: ['White'],
-      stock: 5
-    }
-  ]
+async function getFeaturedProducts(): Promise<Product[]> {
+  const { data } = await supabaseServer
+    .from('products')
+    .select('*')
+    .eq('featured', true)
+    .gt('stock', 0)
+    .order('created_at', { ascending: false })
+    .limit(3)
 
-  const handleAddToCart = (product: any, e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    
-    addItem(
-      {
-        id: product.id,
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        images: [product.image],
-        category: product.category,
-        sizes: product.sizes,
-        colors: product.colors,
-        stock: product.stock,
-        featured: false,
-        gender: 'unisex',
-        tags: [],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      product.sizes[0], // Default to first available size
-      product.colors[0], // Default to first available color
-      1 // quantity
-    )
-    
-    toast.success(`${product.name} added to cart!`)
+  if (!data || data.length === 0) {
+    // Fallback: latest 3 products
+    const { data: fallback } = await supabaseServer
+      .from('products')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(3)
+    return (fallback as Product[]) || []
   }
+  return data as Product[]
+}
 
-  const features = [
-    {
-      icon: <Truck className="w-6 h-6" />,
-      title: 'Free Shipping',
-      description: 'On orders over ₹999'
-    },
-    {
-      icon: <RefreshCw className="w-6 h-6" />,
-      title: 'Easy Returns',
-      description: '30-day return policy'
-    },
-    {
-      icon: <Shield className="w-6 h-6" />,
-      title: 'Secure Payment',
-      description: 'SSL encrypted checkout'
-    },
-    {
-      icon: <Zap className="w-6 h-6" />,
-      title: 'Fast Delivery',
-      description: '2-3 business days'
-    }
-  ]
+const categories = [
+  {
+    id: 'tshirts',
+    name: 'T-Shirts',
+    description: 'Code in comfort',
+    image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&h=800&fit=crop&crop=center',
+    href: '/products?category=tshirts',
+  },
+  {
+    id: 'hoodies',
+    name: 'Hoodies',
+    description: 'Debug mode activated',
+    image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=600&h=800&fit=crop&crop=center',
+    href: '/products?category=hoodies',
+  },
+  {
+    id: 'accessories',
+    name: 'Accessories',
+    description: 'Level up your setup',
+    image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600&h=800&fit=crop&crop=center',
+    href: '/products?category=accessories',
+  },
+]
+
+const stats = [
+  { icon: Users, value: '5,000+', label: 'Engineers Dressed' },
+  { icon: Star, value: '4.8★', label: 'Average Rating' },
+  { icon: Package, value: '50+', label: 'Products' },
+  { icon: Award, value: '30-Day', label: 'Easy Returns' },
+]
+
+const features = [
+  { icon: Truck, title: 'Free Shipping', description: 'On orders over ₹999' },
+  { icon: RefreshCw, title: 'Easy Returns', description: '30-day return policy' },
+  { icon: Shield, title: 'Secure Payment', description: 'SSL encrypted checkout' },
+  { icon: Zap, title: 'Fast Delivery', description: '2-3 business days' },
+]
+
+export default async function HomePage() {
+  const featuredProducts = await getFeaturedProducts()
 
   return (
-    <>
-      {/* SEO Structured Data */}
-      <Head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Store",
-              "name": "Buddy Engineerz",
-              "description": "Premium engineering-themed apparel for developers and tech enthusiasts",
-              "url": "https://buddyengineerz.com",
-              "logo": "https://buddyengineerz.com/images/logo.png",
-              "image": "https://buddyengineerz.com/images/og-image.jpg",
-              "priceRange": "₹599-₹2499",
-              "currenciesAccepted": "INR",
-              "paymentAccepted": ["Credit Card", "Debit Card", "UPI", "Net Banking"],
-              "hasOfferCatalog": {
-                "@type": "OfferCatalog",
-                "name": "Engineering Fashion Collection",
-                "itemListElement": featuredProducts.map(product => ({
-                  "@type": "Offer",
-                  "itemOffered": {
-                    "@type": "Product",
-                    "name": product.name,
-                    "description": product.description,
-                    "image": product.image,
-                    "brand": "Buddy Engineerz",
-                    "category": product.category
-                  },
-                  "price": product.price,
-                  "priceCurrency": "INR",
-                  "availability": "https://schema.org/InStock"
-                }))
-              }
-            })
-          }}
+    <div className="flex flex-col">
+      {/* ─── HERO ─────────────────────────────────────────── */}
+      <section className="relative min-h-[85vh] flex items-center overflow-hidden">
+        {/* Background image */}
+        <img
+          src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1600&h=900&fit=crop&crop=top"
+          alt="Engineering fashion hero"
+          className="absolute inset-0 w-full h-full object-cover"
         />
-      </Head>
+        {/* Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/95 via-purple-950/80 to-slate-900/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
 
-      <div className="flex flex-col">
-        {/* Hero Section */}
-        <section className="relative bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 text-white">
-          <div className="absolute inset-0 bg-black/20"></div>
-          <div className="relative container mx-auto px-4 py-24 md:py-32">
-            <div className="max-w-3xl">
-              <div className="flex items-center space-x-2 mb-4">
-                <Code className="w-8 h-8 text-blue-400" />
-                <Badge variant="secondary" className="bg-blue-500/20 text-blue-300 border-blue-400">
-                  New Collection
-                </Badge>
-              </div>
-              <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-                Engineering
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
-                  {' '}Fashion
-                </span>
-              </h1>
-              <p className="text-xl md:text-2xl mb-8 text-gray-300 leading-relaxed">
-                Where code meets style. Premium apparel designed for developers, engineers, and tech enthusiasts who want to wear their passion.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/products">
-                  <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
-                    Shop Now
-                    <ArrowRight className="ml-2 w-5 h-5" />
-                  </Button>
-                </Link>
-                <Link href="/products">
-                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-black">
-                    View Collection
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent"></div>
-        </section>
+        {/* Floating code pill — decorative */}
+        <div className="absolute top-12 right-12 hidden lg:flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 text-white/80 text-sm font-mono">
+          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+          git push origin main
+        </div>
 
-        {/* Features */}
-        <section className="py-16 bg-muted/50">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              {features.map((feature, index) => (
-                <div key={index} className="flex items-center space-x-3">
-                  <div className="text-primary">
-                    {feature.icon}
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">{feature.title}</h3>
-                    <p className="text-sm text-muted-foreground">{feature.description}</p>
-                  </div>
-                </div>
-              ))}
+        <div className="relative container mx-auto px-4 py-24">
+          <div className="max-w-2xl">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 bg-purple-500/20 border border-purple-400/30 backdrop-blur-sm rounded-full px-4 py-1.5 mb-6">
+              <Code className="w-4 h-4 text-purple-300" />
+              <span className="text-purple-200 text-sm font-medium">New Summer Collection 2026</span>
             </div>
-          </div>
-        </section>
 
-        {/* Categories */}
-        <section className="py-16">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Shop by Category</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Discover our carefully curated collections designed for the modern engineer
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {categories.map((category) => (
-                <Link key={category.id} href={category.href} className="group">
-                  <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-                    <div className="aspect-[4/5] overflow-hidden">
-                      <img
-                        src={category.image}
-                        alt={`${category.name} - ${category.description}`}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                    <CardContent className="p-6">
-                      <CardTitle className="mb-2">{category.name}</CardTitle>
-                      <CardDescription>{category.description}</CardDescription>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
+            {/* Headline */}
+            <h1 className="text-5xl md:text-7xl font-black text-white mb-6 leading-[1.05]">
+              Wear Your
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400">
+                Passion.
+              </span>
+            </h1>
 
-        {/* Featured Products */}
-        <section className="py-16 bg-muted/50">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Featured Products</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Our most popular items loved by engineers worldwide
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {featuredProducts.map((product) => (
-                <Card key={product.id} className="overflow-hidden group hover:shadow-lg transition-shadow">
-                  <div className="aspect-square overflow-hidden relative">
-                    <Link href={`/products/${product.id}`}>
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </Link>
-                    <Badge className="absolute top-3 left-3 bg-primary">
-                      {product.badge}
-                    </Badge>
-                  </div>
-                  <CardContent className="p-6">
-                    <Link href={`/products/${product.id}`}>
-                      <CardTitle className="mb-2 hover:text-primary transition-colors">{product.name}</CardTitle>
-                    </Link>
-                    <CardDescription className="mb-4">{product.description}</CardDescription>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-2xl font-bold text-primary">₹{product.price}</span>
-                        {product.originalPrice && (
-                          <span className="text-lg text-muted-foreground line-through">₹{product.originalPrice}</span>
-                        )}
-                      </div>
-                      <Button 
-                        onClick={(e) => handleAddToCart(product, e)}
-                        size="sm"
-                        className="bg-primary hover:bg-primary/90"
-                      >
-                        Add to Cart
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            <div className="text-center mt-12">
-              <Link href="/products">
-                <Button size="lg" variant="outline">
-                  View All Products
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
+            <p className="text-lg md:text-xl text-gray-300 mb-8 leading-relaxed max-w-xl">
+              Premium engineering-themed apparel crafted for developers, engineers, and tech enthusiasts.
+              Express your code in style.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link
+                href="/products"
+                className="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-8 py-4 rounded-xl font-bold text-base transition-all duration-200 shadow-lg shadow-purple-900/50 hover:shadow-purple-900/70 hover:-translate-y-0.5 active:translate-y-0"
+              >
+                Shop Collection
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+              <Link
+                href="/sale"
+                className="inline-flex items-center justify-center gap-2 border-2 border-white/30 text-white hover:bg-white/10 px-8 py-4 rounded-xl font-bold text-base transition-all duration-200 backdrop-blur-sm"
+              >
+                View Sale 🔥
               </Link>
             </div>
           </div>
-        </section>
+        </div>
 
-        {/* About Section */}
-        <section className="py-16">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className="text-3xl md:text-4xl font-bold mb-6">About Buddy Engineerz</h2>
-                <p className="text-lg text-muted-foreground mb-6">
-                  We understand the passion that drives engineers and developers. Our mission is to create premium apparel that celebrates the engineering mindset and allows you to wear your expertise with pride.
-                </p>
-                <p className="text-lg text-muted-foreground mb-8">
-                  From algorithm-inspired designs to witty programming jokes, every piece in our collection is crafted with attention to detail and quality that engineers appreciate.
-                </p>
-                <Link href="/about">
-                  <Button size="lg">
-                    Learn More About Us
-                    <ArrowRight className="ml-2 w-5 h-5" />
-                  </Button>
-                </Link>
+        {/* Bottom fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent" />
+      </section>
+
+      {/* ─── FEATURES STRIP ─────────────────────────────────── */}
+      <section className="py-6 bg-white border-b border-gray-100">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {features.map((f, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <f.icon className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-900">{f.title}</p>
+                  <p className="text-xs text-gray-500">{f.description}</p>
+                </div>
               </div>
-              <div className="relative">
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── SOCIAL PROOF / STATS ─────────────────────────── */}
+      <section className="py-16 bg-gradient-to-br from-purple-950 via-slate-900 to-blue-950 text-white">
+        <div className="container mx-auto px-4">
+          <p className="text-center text-purple-300 text-sm font-semibold uppercase tracking-widest mb-10">
+            Trusted by engineers worldwide
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {stats.map((s, i) => (
+              <div key={i} className="text-center">
+                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                  <s.icon className="w-6 h-6 text-purple-300" />
+                </div>
+                <p className="text-3xl font-black mb-1">{s.value}</p>
+                <p className="text-purple-300 text-sm">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── CATEGORIES ─────────────────────────────────────── */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <p className="text-purple-600 text-sm font-bold uppercase tracking-widest mb-3">Collections</p>
+            <h2 className="text-4xl font-black text-gray-900 mb-4">Shop by Category</h2>
+            <p className="text-gray-500 max-w-xl mx-auto">
+              Carefully curated collections designed for the modern engineer
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {categories.map((cat) => (
+              <Link key={cat.id} href={cat.href} className="group relative overflow-hidden rounded-3xl aspect-[3/4] block">
                 <img
-                  src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&h=400&fit=crop&crop=center"
-                  alt="Engineering team collaboration"
-                  className="rounded-lg shadow-lg"
+                  src={cat.image}
+                  alt={cat.name}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg"></div>
+                {/* Dark gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                {/* Content on top of image */}
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <p className="text-white/70 text-sm mb-1">{cat.description}</p>
+                  <h3 className="text-white text-2xl font-black mb-3">{cat.name}</h3>
+                  <span className="inline-flex items-center gap-2 bg-white text-gray-900 text-sm font-bold px-4 py-2 rounded-full group-hover:bg-purple-600 group-hover:text-white transition-colors duration-200">
+                    Shop Now <ArrowRight className="w-4 h-4" />
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── FEATURED PRODUCTS (LIVE FROM DB) ─────────────── */}
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+            <div>
+              <p className="text-purple-600 text-sm font-bold uppercase tracking-widest mb-3">Handpicked</p>
+              <h2 className="text-4xl font-black text-gray-900">Featured Products</h2>
+            </div>
+            <Link
+              href="/products"
+              className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 font-semibold text-sm"
+            >
+              View All Products <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* Client component renders interactive product cards */}
+          <HomepageClient featuredProducts={featuredProducts} />
+        </div>
+      </section>
+
+      {/* ─── ABOUT STRIP ─────────────────────────────────── */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <p className="text-purple-600 text-sm font-bold uppercase tracking-widest mb-4">Our Story</p>
+              <h2 className="text-4xl font-black text-gray-900 mb-6">Built by Engineers,<br />for Engineers</h2>
+              <p className="text-gray-500 text-lg leading-relaxed mb-6">
+                We understand the passion that drives engineers and developers. Our mission is to create premium apparel
+                that celebrates the engineering mindset — from algorithm-inspired designs to witty programming jokes.
+              </p>
+              <p className="text-gray-500 leading-relaxed mb-8">
+                Every piece is crafted with the attention to detail and quality that engineers appreciate.
+              </p>
+              <Link
+                href="/about"
+                className="inline-flex items-center gap-2 bg-gray-900 text-white px-7 py-3.5 rounded-xl font-bold hover:bg-purple-700 transition-colors duration-200"
+              >
+                Learn More <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            <div className="relative">
+              <img
+                src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=700&h=500&fit=crop&crop=center"
+                alt="Engineering team"
+                className="rounded-3xl shadow-2xl w-full"
+              />
+              {/* Floating badge */}
+              <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl p-5 border border-gray-100">
+                <div className="flex items-center gap-1 mb-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+                <p className="text-sm font-bold text-gray-900">"Best merch for devs!"</p>
+                <p className="text-xs text-gray-500 mt-0.5">— Priya S., Senior Engineer</p>
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Newsletter */}
-        <section className="py-16 bg-muted/50">
-          <div className="container mx-auto px-4">
-            <NewsletterSubscription />
-          </div>
-        </section>
-      </div>
-    </>
+      {/* ─── NEWSLETTER ──────────────────────────────────── */}
+      <section className="py-20 bg-gradient-to-br from-purple-50 to-blue-50">
+        <div className="container mx-auto px-4">
+          <NewsletterSubscription />
+        </div>
+      </section>
+    </div>
   )
 }

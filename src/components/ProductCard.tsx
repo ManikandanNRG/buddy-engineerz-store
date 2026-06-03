@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ShoppingCart, Heart, Eye, Check } from 'lucide-react'
+import { ShoppingCart, Heart, Eye, Check, Star } from 'lucide-react'
 import { formatPrice, calculateDiscount } from '@/lib/database'
 import { useCartStore } from '@/store/cart'
 import { useWishlistStore } from '@/store/wishlist'
@@ -38,6 +38,8 @@ export function ProductCard({
 
   const isWishlisted = isClient && isHydrated && isInWishlist(product.id)
   const discount = calculateDiscount(product.original_price || 0, product.price)
+  const isNew = new Date().getTime() - new Date(product.created_at).getTime() < 30 * 24 * 60 * 60 * 1000
+  const isLowStock = product.stock > 0 && product.stock <= 5
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -211,6 +213,16 @@ export function ProductCard({
             {discount}% OFF
           </div>
         )}
+        {!discount && isNew && (
+          <div className="absolute top-4 left-4 bg-emerald-500 text-white px-2.5 py-1 rounded-full text-[10px] font-bold shadow-lg z-10 uppercase">
+            New
+          </div>
+        )}
+        {isLowStock && (
+          <div className="absolute top-4 left-4 bg-orange-500 text-white px-2.5 py-1 rounded-full text-[10px] font-bold shadow-lg z-10 uppercase">
+            Only {product.stock} left!
+          </div>
+        )}
 
         <button
           onClick={handleWishlistToggle}
@@ -258,7 +270,7 @@ export function ProductCard({
       {/* Details */}
       <div className="p-5 flex flex-col flex-1">
         <div className="mb-auto">
-          <div className="flex items-center gap-1.5 mb-2">
+          <div className="flex items-center gap-1.5 mb-1.5">
             {product.tags.slice(0, 1).map((tag, idx) => (
               <span key={idx} className="text-[10px] font-bold text-purple-600 uppercase tracking-widest bg-purple-50 px-2 py-0.5 rounded">
                 {tag}
@@ -270,6 +282,15 @@ export function ProductCard({
               {product.name}
             </h3>
           </Link>
+          {/* Star rating */}
+          <div className="flex items-center gap-1 mb-1.5">
+            <div className="flex items-center gap-0.5">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-3 h-3 text-yellow-400 fill-current" />
+              ))}
+            </div>
+            <span className="text-[10px] text-gray-400">(4.8)</span>
+          </div>
           <p className="text-gray-500 text-xs line-clamp-1 mb-3">{product.description}</p>
         </div>
 

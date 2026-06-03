@@ -2,9 +2,25 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { Search, ShoppingCart, User, Menu, X, LogOut, Settings, Package } from 'lucide-react'
+import { 
+  Search, 
+  ShoppingCart, 
+  User, 
+  Menu, 
+  X, 
+  LogOut, 
+  Settings, 
+  Package, 
+  ChevronDown,
+  ShoppingBag,
+  Shirt,
+  Layers,
+  Briefcase,
+  Flame
+} from 'lucide-react'
 import { useCartStore } from '@/store/cart'
 import { useAuth } from '@/hooks/useAuth'
+import CartDrawer from '@/components/CartDrawer'
 
 // User Menu Component
 function UserMenu() {
@@ -96,7 +112,8 @@ function UserMenu() {
 export default function Header() {
   const [searchTerm, setSearchTerm] = useState('')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { items, isLoading, isHydrated } = useCartStore()
+  const [productsDropdown, setProductsDropdown] = useState(false)
+  const { items, isLoading, isHydrated, openCart } = useCartStore()
 
   const cartItemsCount = items.reduce((total: number, item: any) => total + item.quantity, 0)
 
@@ -108,7 +125,8 @@ export default function Header() {
   }
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
+    <>
+    <header className="bg-white shadow-sm sticky top-0 z-50" style={{ fontFamily: "'Inter', sans-serif" }}>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -121,22 +139,61 @@ export default function Header() {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/" className="text-gray-700 hover:text-purple-600 transition-colors">
+            <Link href="/" className="text-gray-700 hover:text-purple-600 transition-colors font-medium">
               Home
             </Link>
-            <Link href="/products" className="text-gray-700 hover:text-purple-600 transition-colors">
-              Products
-            </Link>
-            <Link href="/blog" className="text-gray-700 hover:text-purple-600 transition-colors">
+
+            {/* Products with dropdown */}
+            <div
+              className="relative"
+              onMouseEnter={() => setProductsDropdown(true)}
+              onMouseLeave={() => setProductsDropdown(false)}
+            >
+              <button className="flex items-center gap-1 text-gray-700 hover:text-purple-600 transition-colors font-medium py-6">
+                Products
+                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${productsDropdown ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Dropdown Panel */}
+              <div
+                className={`absolute top-full left-1/2 -translate-x-1/2 mt-0 w-52 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden transition-all duration-200 ${
+                  productsDropdown ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-2 pointer-events-none'
+                }`}
+              >
+                <div className="p-2">
+                  {[
+                    { label: 'All Products', href: '/products', icon: <ShoppingBag className="w-4 h-4 text-purple-500" /> },
+                    { label: 'T-Shirts', href: '/products?category=tshirts', icon: <Shirt className="w-4 h-4 text-purple-500" /> },
+                    { label: 'Hoodies', href: '/products?category=hoodies', icon: <Layers className="w-4 h-4 text-purple-500" /> },
+                    { label: 'Accessories', href: '/products?category=accessories', icon: <Briefcase className="w-4 h-4 text-purple-500" /> },
+                    { label: 'Sale Items', href: '/sale', icon: <Flame className="w-4 h-4 text-orange-500" /> },
+                  ].map(item => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setProductsDropdown(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                    >
+                      <div className="bg-purple-50 p-1.5 rounded-md group-hover:bg-purple-100 transition-colors">
+                        {item.icon}
+                      </div>
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <Link href="/blog" className="text-gray-700 hover:text-purple-600 transition-colors font-medium">
               Blog
             </Link>
-            <Link href="/wishlist" className="text-gray-700 hover:text-purple-600 transition-colors">
+            <Link href="/wishlist" className="text-gray-700 hover:text-purple-600 transition-colors font-medium">
               Wishlist
             </Link>
-            <Link href="/about" className="text-gray-700 hover:text-purple-600 transition-colors">
+            <Link href="/about" className="text-gray-700 hover:text-purple-600 transition-colors font-medium">
               About
             </Link>
-            <Link href="/contact" className="text-gray-700 hover:text-purple-600 transition-colors">
+            <Link href="/contact" className="text-gray-700 hover:text-purple-600 transition-colors font-medium">
               Contact
             </Link>
           </nav>
@@ -157,20 +214,23 @@ export default function Header() {
 
           {/* Actions */}
           <div className="flex items-center space-x-4">
-            {/* Cart */}
-            <Link href="/cart" className="relative p-2 text-gray-700 hover:text-purple-600 transition-colors">
+            {/* Cart — opens drawer */}
+            <button
+              onClick={openCart}
+              className="relative p-2 text-gray-700 hover:text-purple-600 transition-colors"
+              aria-label="Open cart"
+            >
               <ShoppingCart className="h-6 w-6" />
               {(isLoading || !isHydrated) ? (
-                // Show loading skeleton for cart count
                 <div className="absolute -top-1 -right-1 bg-gray-200 rounded-full h-5 w-5 animate-pulse"></div>
               ) : (
                 cartItemsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
                     {cartItemsCount}
                   </span>
                 )
               )}
-            </Link>
+            </button>
 
             {/* User Menu */}
             <UserMenu />
@@ -265,5 +325,7 @@ export default function Header() {
         )}
       </div>
     </header>
+    <CartDrawer />
+    </>
   )
 } 

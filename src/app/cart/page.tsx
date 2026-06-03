@@ -12,7 +12,10 @@ import {
   ShoppingBag, 
   Truck,
   Shield,
-  Heart
+  Heart,
+  User,
+  Flame,
+  Sparkles
 } from 'lucide-react'
 import { useCartStore } from '@/store/cart'
 import { useWishlistStore } from '@/store/wishlist'
@@ -182,17 +185,19 @@ export default function CartPage() {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { name: "Men's", href: "/products?gender=men", icon: "👨‍💻" },
-                { name: "Women's", href: "/products?gender=women", icon: "👩‍💻" },
-                { name: "Best Sellers", href: "/products?sort=popular", icon: "🔥" },
-                { name: "New Arrivals", href: "/products?sort=newest", icon: "✨" }
+                { name: "Men's", href: "/products?gender=men", icon: <User className="w-8 h-8 text-blue-500" /> },
+                { name: "Women's", href: "/products?gender=women", icon: <User className="w-8 h-8 text-pink-500" /> },
+                { name: "Best Sellers", href: "/products?sort=popular", icon: <Flame className="w-8 h-8 text-orange-500" /> },
+                { name: "New Arrivals", href: "/products?sort=newest", icon: <Sparkles className="w-8 h-8 text-purple-500" /> }
               ].map((cat) => (
                 <Link
                   key={cat.name}
                   href={cat.href}
-                  className="bg-white p-6 rounded-2xl border border-gray-100 hover:border-purple-200 hover:shadow-md transition-all group"
+                  className="bg-white p-6 rounded-2xl border border-gray-100 hover:border-purple-200 hover:shadow-md transition-all group flex flex-col items-center justify-center text-center gap-3"
                 >
-                  <span className="text-2xl mb-2 block group-hover:scale-125 transition-transform">{cat.icon}</span>
+                  <div className="group-hover:scale-110 transition-transform bg-gray-50 p-3 rounded-xl group-hover:bg-purple-50">
+                    {cat.icon}
+                  </div>
                   <span className="text-sm font-bold text-gray-900">{cat.name}</span>
                 </Link>
               ))}

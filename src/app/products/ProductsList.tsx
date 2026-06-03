@@ -155,9 +155,12 @@ export default function ProductsList({ initialProducts, initialCategories }: Pro
         </p>
       </div>
 
-      {/* Search and Filters */}
-      <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
+      {/* Layout Container */}
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Sidebar Filters */}
+        <aside className="w-full lg:w-72 flex-shrink-0">
+          <div className="bg-white rounded-2xl shadow-sm p-6 mb-8 lg:mb-0 lg:sticky lg:top-24 border border-gray-100">
+            <div className="flex flex-col gap-4 mb-6">
           {/* Search Bar */}
           <div className="relative flex-1">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -189,132 +192,183 @@ export default function ProductsList({ initialProducts, initialCategories }: Pro
 
         {/* Filter Controls */}
         <div className={`${showMobileFilters ? 'block' : 'hidden'} md:block`}>
-          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-          <div className="flex flex-wrap gap-4 items-center">
-            {/* Category Filter */}
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
-            >
-              <option value="all">All Categories</option>
-              {initialCategories.map((category) => (
-                <option key={category.id} value={category.name.toLowerCase()}>
-                  {category.name}
-                </option>
+          {/* Category Pills */}
+          <div className="mb-4">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Category</p>
+            <div className="flex flex-wrap gap-2">
+              {['all', ...initialCategories.map(c => c.name.toLowerCase())].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-all duration-200 ${
+                    selectedCategory === cat
+                      ? 'bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-200'
+                      : 'bg-white text-gray-600 border-gray-200 hover:border-purple-400 hover:text-purple-600'
+                  }`}
+                >
+                  {cat === 'all' ? 'All' : cat.charAt(0).toUpperCase() + cat.slice(1)}
+                </button>
               ))}
-            </select>
+            </div>
+          </div>
 
-            {/* Gender Filter */}
-            <select
-              value={selectedGender}
-              onChange={(e) => setSelectedGender(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
-            >
-              <option value="all">All Genders</option>
-              <option value="unisex">Unisex</option>
-              <option value="men">Men</option>
-              <option value="women">Women</option>
-            </select>
-
-            {/* Size Filter */}
-            <select
-              value={selectedSize}
-              onChange={(e) => setSelectedSize(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
-            >
-              <option value="all">All Sizes</option>
-              <option value="XS">XS</option>
-              <option value="S">S</option>
-              <option value="M">M</option>
-              <option value="L">L</option>
-              <option value="XL">XL</option>
-              <option value="XXL">XXL</option>
-              <option value="One Size">One Size</option>
-            </select>
-
-            {/* Color Filter */}
-            <select
-              value={selectedColor}
-              onChange={(e) => setSelectedColor(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 max-w-[150px]"
-            >
-              <option value="all">All Colors</option>
-              {Array.from(new Set(initialProducts.flatMap(p => p.colors))).map(color => (
-                <option key={color} value={color}>{color}</option>
+          {/* Gender Pills */}
+          <div className="mb-4">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Gender</p>
+            <div className="flex flex-wrap gap-2">
+              {['all', 'unisex', 'men', 'women'].map((g) => (
+                <button
+                  key={g}
+                  onClick={() => setSelectedGender(g)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-all duration-200 ${
+                    selectedGender === g
+                      ? 'bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-200'
+                      : 'bg-white text-gray-600 border-gray-200 hover:border-purple-400 hover:text-purple-600'
+                  }`}
+                >
+                  {g === 'all' ? 'All' : g.charAt(0).toUpperCase() + g.slice(1)}
+                </button>
               ))}
-            </select>
+            </div>
+          </div>
 
+          {/* Size Chips */}
+          <div className="mb-4">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Size</p>
+            <div className="flex flex-wrap gap-2">
+              {['all', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'One Size'].map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setSelectedSize(s)}
+                  className={`min-w-[44px] h-9 px-3 rounded-lg text-sm font-bold border transition-all duration-200 ${
+                    selectedSize === s
+                      ? 'bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-200'
+                      : 'bg-white text-gray-600 border-gray-200 hover:border-purple-400 hover:text-purple-600'
+                  }`}
+                >
+                  {s === 'all' ? 'All' : s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Color Swatches */}
+          <div className="mb-4">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Color</p>
+            <div className="flex flex-wrap gap-2 items-center">
+              <button
+                onClick={() => setSelectedColor('all')}
+                className={`h-8 px-3 rounded-full text-xs font-bold border transition-all ${
+                  selectedColor === 'all'
+                    ? 'bg-purple-600 text-white border-purple-600'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-purple-400'
+                }`}
+              >
+                All
+              </button>
+              {Array.from(new Set(initialProducts.flatMap(p => p.colors))).map(color => {
+                const colorMap: Record<string, string> = {
+                  'Black': '#1a1a1a', 'White': '#f5f5f5', 'Gray': '#9ca3af',
+                  'Navy': '#1e3a5f', 'Blue': '#3b82f6', 'Red': '#ef4444',
+                  'Green': '#22c55e', 'Yellow': '#eab308', 'Purple': '#a855f7',
+                  'Pink': '#ec4899', 'Orange': '#f97316', 'Brown': '#92400e',
+                }
+                const hex = colorMap[color] || '#888'
+                return (
+                  <button
+                    key={color}
+                    onClick={() => setSelectedColor(color)}
+                    title={color}
+                    className={`relative w-8 h-8 rounded-full border-2 transition-all duration-200 ${
+                      selectedColor === color
+                        ? 'border-purple-600 scale-110 shadow-md'
+                        : 'border-gray-200 hover:border-purple-400 hover:scale-110'
+                    }`}
+                    style={{ backgroundColor: hex }}
+                  >
+                    {color === 'White' && (
+                      <span className="absolute inset-0 rounded-full border border-gray-200" />
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Price Range + Clear Filters */}
+          <div className="flex flex-col gap-4 pt-4 border-t border-gray-100">
             {/* Price Range */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Price:</span>
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Max Price</span>
+                <span className="text-sm font-bold text-gray-900">₹{priceRange[1].toLocaleString()}</span>
+              </div>
               <input
                 type="range"
                 min={0}
                 max={5000}
                 value={priceRange[1]}
                 onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                className="w-24"
+                className="w-full accent-purple-600"
               />
-              <span className="text-sm text-gray-600">
-                ₹{priceRange[1]}
-              </span>
             </div>
 
             {/* Clear Filters */}
             {activeFiltersCount > 0 && (
               <button
                 onClick={clearAllFilters}
-                className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-700"
+                className="flex items-center justify-center gap-1.5 text-sm font-semibold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-2.5 rounded-xl transition-all w-full mt-2"
               >
                 <X className="h-4 w-4" />
-                Clear ({activeFiltersCount})
+                Clear All Filters ({activeFiltersCount})
               </button>
             )}
           </div>
+        </div>
+        </div>
+        </aside>
 
-          <div className="flex items-center gap-4">
-            {/* Sort By */}
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
-            >
-              <option value="newest">Newest First</option>
-              <option value="price_asc">Price: Low to High</option>
-              <option value="price_desc">Price: High to Low</option>
-              <option value="name">Name: A to Z</option>
-            </select>
+        {/* Main Content */}
+        <main className="flex-1 min-w-0">
+          {/* Top Bar (Results count + Sort/View mode) */}
+          <div className="bg-white rounded-2xl shadow-sm p-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-gray-100">
+            <p className="text-gray-600 font-medium text-sm">
+              Showing <span className="text-gray-900 font-bold">{filteredProducts.length}</span> of {initialProducts.length} products
+              {searchTerm && (
+                <span> for "<span className="text-gray-900 font-bold">{searchTerm}</span>"</span>
+              )}
+            </p>
 
-            {/* View Mode */}
-            <div className="flex border border-gray-300 rounded-md">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-2 ${viewMode === 'grid' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+            <div className="flex items-center gap-3">
+              {/* Sort By */}
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-gray-50 font-medium text-gray-700 hover:bg-gray-100 cursor-pointer transition-colors"
               >
-                <Grid className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 ${viewMode === 'list' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
-              >
-                <List className="h-4 w-4" />
-              </button>
+                <option value="newest">Newest First</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+                <option value="name">Name: A to Z</option>
+              </select>
+
+              {/* View Mode */}
+              <div className="flex border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2.5 transition-colors ${viewMode === 'grid' ? 'bg-purple-600 text-white shadow-inner' : 'text-gray-500 hover:bg-gray-200'}`}
+                >
+                  <Grid className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2.5 transition-colors ${viewMode === 'list' ? 'bg-purple-600 text-white shadow-inner' : 'text-gray-500 hover:bg-gray-200'}`}
+                >
+                  <List className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-
-      {/* Results Count */}
-      <div className="mb-6">
-        <p className="text-gray-600">
-          Showing {filteredProducts.length} of {initialProducts.length} products
-          {searchTerm && (
-            <span className="font-medium"> for "{searchTerm}"</span>
-          )}
-        </p>
-      </div>
 
       {/* Products Grid/List */}
       {isLoading ? (
@@ -397,6 +451,8 @@ export default function ProductsList({ initialProducts, initialCategories }: Pro
           )}
         </>
       )}
+        </main>
+      </div>
     </div>
   )
 }
