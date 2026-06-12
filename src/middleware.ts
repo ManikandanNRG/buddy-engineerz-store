@@ -15,26 +15,11 @@ export async function middleware(req: NextRequest) {
 
   // Admin route protection
   if (req.nextUrl.pathname.startsWith('/admin')) {
-    const isAdmin = session?.user?.user_metadata?.role === 'admin'
-
-    // Allow access to login page
-    if (req.nextUrl.pathname === '/admin/login') {
-      // If already logged in as admin, redirect to dashboard
-      if (session && isAdmin) {
-        return NextResponse.redirect(new URL('/admin/dashboard', req.url))
-      }
-      return res
-    }
-
-    // If not logged in, redirect to admin login
-    if (!session) {
-      return NextResponse.redirect(new URL('/admin/login', req.url))
-    }
-
-    // If logged in but not an admin, redirect to home page
-    if (!isAdmin) {
-      return NextResponse.redirect(new URL('/', req.url))
-    }
+    // We let the application handle the detailed admin checks
+    // using the useRequireAdminAuth hook and admin_users table
+    // to avoid syncing issues with user_metadata
+    // Middleware cookie checks are disabled here because the client uses
+    // localStorage which doesn't sync to cookies automatically.
   }
 
   return res

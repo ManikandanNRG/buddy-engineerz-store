@@ -43,105 +43,10 @@ const baseClient = createClient(supabaseUrl, supabaseAnonKey, {
   }
 })
 
-// Helper function to handle auth session errors
-const handleAuthSessionError = (error: any, methodName: string) => {
-  if (error?.message?.includes('Auth session missing') || 
-      error?.name === 'AuthSessionMissingError') {
-    console.log(`🛡️ AuthSessionMissingError caught in ${methodName} - returning safe response`)
-    return true
-  }
-  return false
-}
-
-// Patch ALL auth methods that might throw AuthSessionMissingError
-const originalGetUser = baseClient.auth.getUser.bind(baseClient.auth)
-const originalGetSession = baseClient.auth.getSession.bind(baseClient.auth)
-
-baseClient.auth.getUser = async (jwt?: string) => {
-  try {
-    return await originalGetUser(jwt)
-  } catch (error: any) {
-    if (handleAuthSessionError(error, 'getUser')) {
-      return { data: { user: null }, error: { message: 'No active session' } as any }
-    }
-    throw error
-  }
-}
-
-baseClient.auth.getSession = async () => {
-  try {
-    return await originalGetSession()
-  } catch (error: any) {
-    if (handleAuthSessionError(error, 'getSession')) {
-      return { data: { session: null }, error: { message: 'No active session' } as any }
-    }
-    throw error
-  }
-}
-
-// Patch internal methods that are actually causing the errors
-const authClient = baseClient.auth as any
-
-// Patch _useSession method
-if (authClient._useSession) {
-  const original_useSession = authClient._useSession.bind(authClient)
-  authClient._useSession = async (...args: any[]) => {
-    try {
-      return await original_useSession(...args)
-    } catch (error: any) {
-      if (handleAuthSessionError(error, '_useSession')) {
-        return null
-      }
-      throw error
-    }
-  }
-}
-
-// Patch _getUser method
-if (authClient._getUser) {
-  const original_getUser = authClient._getUser.bind(authClient)
-  authClient._getUser = async (...args: any[]) => {
-    try {
-      return await original_getUser(...args)
-    } catch (error: any) {
-      if (handleAuthSessionError(error, '_getUser')) {
-        return { data: { user: null }, error: null }
-      }
-      throw error
-    }
-  }
-}
-
-// Patch any other internal methods that might exist
-const methodsToPatch = ['_refreshAccessToken', '_recover', '_recoverAndRefresh', '_callRefreshToken']
-methodsToPatch.forEach(methodName => {
-  if (authClient[methodName]) {
-    const originalMethod = authClient[methodName].bind(authClient)
-    authClient[methodName] = async (...args: any[]) => {
-      try {
-        return await originalMethod(...args)
-      } catch (error: any) {
-        if (handleAuthSessionError(error, methodName)) {
-          return { data: null, error: { message: 'No active session' } }
-        }
-        throw error
-      }
-    }
-  }
-})
-
-// Global error suppression for auth session errors
-if (typeof window !== 'undefined') {
-  const originalConsoleError = console.error
-  console.error = (...args: any[]) => {
-    const message = args.join(' ')
-    if (message.includes('Auth session missing') || message.includes('AuthSessionMissingError')) {
-      // Quietly suppress auth session missing errors from logs
-      return
-    }
-    originalConsoleError.apply(console, args)
-  }
-}
+// We removed the aggressive monkey-patching of Supabase auth internals
+// because it was returning null instead of throwing, causing destructuring
+// errors in getCurrentUser().
+// safeGetUser() in auth.ts already handles the AuthSessionMissingError correctly.
 
 export const supabase = baseClient
 

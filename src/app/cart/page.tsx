@@ -170,7 +170,7 @@ export default function CartPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
               <Link
                 href="/products"
-                className="w-full sm:w-auto bg-purple-600 text-white px-8 py-4 rounded-2xl hover:bg-purple-700 transition-all shadow-lg hover:shadow-purple-200 font-bold flex items-center justify-center gap-2 group"
+                className="w-full sm:w-auto bg-blue-600 text-white px-8 py-4 rounded-2xl hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 transition-all shadow-lg hover:shadow-blue-200 font-bold flex items-center justify-center gap-2 group"
               >
                 Browse All Products
                 <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -383,7 +383,7 @@ export default function CartPage() {
 
               <Link
                 href="/checkout"
-                className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium mt-6 flex items-center justify-center gap-2"
+                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 transition-colors font-medium mt-6 flex items-center justify-center gap-2"
               >
                 Proceed to Checkout
               </Link>

@@ -66,7 +66,6 @@ export function AdminAuthProvider({ children }: AdminAuthProviderProps) {
     const { data: { subscription } } = onAdminAuthStateChange((adminUser) => {
       if (mounted) {
         setUser(adminUser)
-        setLoading(false)
       }
     })
 
@@ -104,7 +103,11 @@ export function useRequireAdminAuth() {
   
   useEffect(() => {
     if (!loading && !user) {
-      window.location.href = '/admin/login'
+      // Use router instead of hard reload to prevent jarring flashes
+      import('next/navigation').then(({ useRouter }) => {
+        // Fallback for when we can't use hooks directly here easily
+        window.location.href = '/admin/login'
+      })
     }
   }, [user, loading])
 

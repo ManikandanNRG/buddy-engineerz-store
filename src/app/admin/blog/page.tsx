@@ -50,7 +50,7 @@ export default function AdminBlogPage() {
         </div>
         <Link
           href="/admin/blog/new"
-          className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2 w-fit"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 transition-colors flex items-center gap-2 w-fit"
         >
           <Plus className="h-5 w-5" />
           New Article

@@ -196,7 +196,7 @@ export default function AddressesPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Please Sign In</h1>
-          <Link href="/auth/login?redirect=/account/addresses" className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700">
+          <Link href="/auth/login?redirect=/account/addresses" className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300">
             Sign In
           </Link>
         </div>
@@ -226,7 +226,7 @@ export default function AddressesPage() {
             {!isEditing && (
               <button
                 onClick={() => setIsEditing(true)}
-                className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 transition-colors"
               >
                 <Plus className="h-5 w-5" />
                 Add New Address
@@ -382,7 +382,7 @@ export default function AddressesPage() {
                   </button>
                   <button
                     type="submit"
-                    className="flex items-center gap-2 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium disabled:opacity-50"
+                    className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 font-medium disabled:opacity-50"
                     disabled={isSaving}
                   >
                     {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -403,7 +403,7 @@ export default function AddressesPage() {
                   <p className="text-gray-500 mb-6">You haven't saved any shipping addresses yet.</p>
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="inline-flex items-center gap-2 bg-purple-600 text-white px-6 py-2.5 rounded-lg hover:bg-purple-700 transition-colors"
+                    className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 transition-colors"
                   >
                     <Plus className="h-5 w-5" />
                     Add Your First Address

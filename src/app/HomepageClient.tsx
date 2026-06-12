@@ -93,7 +93,7 @@ function FeaturedProductCard({ product, index }: { product: Product; index: numb
         </div>
 
         <Link href={`/products/${product.id}`} className="mb-1">
-          <h3 className="font-bold text-gray-900 group-hover:text-purple-600 transition-colors line-clamp-1">
+          <h3 className="font-bold text-gray-900 group-hover:text-orange-600 transition-colors line-clamp-1">
             {product.name}
           </h3>
         </Link>
@@ -111,7 +111,7 @@ function FeaturedProductCard({ product, index }: { product: Product; index: numb
             className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 ${
               isAdding
                 ? 'bg-green-500 text-white scale-95'
-                : 'bg-purple-600 text-white hover:bg-purple-700 hover:shadow-lg hover:shadow-purple-200 active:scale-95'
+                : 'bg-blue-600 text-white hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 hover:shadow-lg active:scale-95'
             }`}
           >
             <ShoppingCart className="w-4 h-4" />
@@ -128,7 +128,7 @@ export default function HomepageClient({ featuredProducts }: HomepageClientProps
     return (
       <div className="text-center py-12 text-gray-400">
         <p>No featured products found.</p>
-        <Link href="/products" className="text-purple-600 font-semibold mt-2 inline-block">
+        <Link href="/products" className="text-orange-600 font-semibold mt-2 inline-block">
           Browse all products
         </Link>
       </div>

@@ -135,7 +135,7 @@ export function ProductCard({
                         onClick={() => setSelectedSize(size)}
                         className={`min-w-[40px] h-9 px-2 rounded-md text-sm font-medium border transition-all ${
                           selectedSize === size 
-                            ? 'bg-purple-600 border-purple-600 text-white shadow-md' 
+                            ? 'bg-blue-600 border-purple-600 text-white shadow-md' 
                             : 'border-gray-200 text-gray-700 hover:border-purple-600 hover:text-purple-600'
                         }`}
                       >
@@ -164,7 +164,7 @@ export function ProductCard({
                 className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
                   isAdding 
                     ? 'bg-green-500 text-white scale-95' 
-                    : 'bg-purple-600 text-white hover:bg-purple-700 hover:shadow-lg active:scale-95'
+                    : 'bg-blue-600 text-white hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 hover:shadow-lg active:scale-95'
                 }`}
               >
                 {isAdding ? <Check className="h-5 w-5" /> : <ShoppingCart className="h-5 w-5" />}
@@ -307,7 +307,7 @@ export function ProductCard({
           </div>
           <button
             onClick={handleAddToCart}
-            className="p-2 rounded-full bg-gray-100 text-gray-900 hover:bg-purple-600 hover:text-white transition-all duration-300 active:scale-90"
+            className="p-2 rounded-full bg-gray-100 text-gray-900 hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 active:scale-90"
             title="Add to Cart"
           >
             <ShoppingCart className="h-4 w-4" />

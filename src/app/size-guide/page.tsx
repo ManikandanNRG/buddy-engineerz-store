@@ -400,7 +400,7 @@ export default function SizeGuidePage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
                 href="/contact"
-                className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium flex items-center justify-center gap-2"
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 transition-colors font-medium flex items-center justify-center gap-2"
               >
                 Contact Size Expert
                 <ArrowRight className="h-4 w-4" />

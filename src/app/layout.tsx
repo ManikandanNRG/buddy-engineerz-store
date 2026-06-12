@@ -183,7 +183,7 @@ export default function RootLayout({
               {/* Brand & Newsletter */}
               <div className="lg:col-span-2">
                 <div className="mb-6">
-                  <h3 className="text-2xl font-bold mb-4">Buddy Engineerz</h3>
+                  <h3 className="text-2xl font-extrabold uppercase tracking-tight mb-4">BUDDY ENGINEER<span className="text-red-500">Z</span></h3>
                   <p className="text-gray-300 mb-6 max-w-md">
                     Engineering fashion for the modern tech enthusiast. Premium apparel designed by engineers, for engineers.
                   </p>
@@ -217,27 +217,9 @@ export default function RootLayout({
               </div>
             </div>
             
-            {/* Trust Badges */}
             <div className="border-t border-gray-700 mt-8 pt-8">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-                {[
-                  { icon: '🔒', title: 'Secure Payments', desc: 'SSL 256-bit encrypted' },
-                  { icon: '📦', title: 'Easy Returns', desc: '30-day hassle-free returns' },
-                  { icon: '⭐', title: 'Premium Quality', desc: '100% quality guaranteed' },
-                  { icon: '🚚', title: 'Fast Delivery', desc: '2-3 business days' },
-                ].map((badge, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <span className="text-2xl">{badge.icon}</span>
-                    <div>
-                      <p className="text-white text-sm font-semibold">{badge.title}</p>
-                      <p className="text-gray-400 text-xs">{badge.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
               {/* Payment logos row */}
-              <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-6 border-t border-gray-800">
+              <div className="flex flex-col md:flex-row justify-between items-center gap-6">
                 <div className="flex flex-wrap gap-3 items-center">
                   <span className="text-xs text-gray-500 mr-1">We accept:</span>
                   {/* UPI */}

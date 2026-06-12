@@ -251,7 +251,7 @@ export default function AdminOrdersPage() {
               <button
                 onClick={fetchOrders}
                 disabled={ordersLoading}
-                className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                className="bg-blue-600 hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 disabled:opacity-50 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
               >
                 <span>🔄</span>
                 <span>{ordersLoading ? 'Loading...' : 'Refresh Orders'}</span>

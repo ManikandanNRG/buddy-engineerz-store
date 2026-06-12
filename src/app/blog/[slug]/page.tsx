@@ -146,7 +146,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             <div className="border-t border-gray-200 mt-12 pt-8">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900">Share this article</h3>
-                <button className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 transition-colors">
                   <Share2 className="h-4 w-4" />
                   Share
                 </button>
@@ -157,7 +157,7 @@ export default async function BlogPostPage({ params }: PageProps) {
       </div>
 
       {/* CTA Section */}
-      <div className="bg-purple-600 text-white py-16">
+      <div className="bg-blue-600 text-white py-16">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Upgrade Your Developer Wardrobe?</h2>
           <p className="text-xl text-purple-100 mb-8 max-w-2xl mx-auto">

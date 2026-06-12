@@ -4,15 +4,23 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { getCurrentUser, onAuthStateChange, getUserProfile, createOrUpdateUserProfile } from '@/lib/auth'
 import type { AuthUser, UserProfile } from '@/lib/auth'
 
-interface AuthContextType {
+export interface AuthContextType {
   user: AuthUser | null
   profile: UserProfile | null
   loading: boolean
+  isAdmin: boolean
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  profile: null,
+  loading: true,
+  isAdmin: false,
+  signOut: async () => {},
+  refreshProfile: async () => {},
+})
 
 interface AuthProviderProps {
   children: ReactNode
@@ -23,10 +31,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [initialLoadComplete, setInitialLoadComplete] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   const refreshProfile = async () => {
     if (user) {
       try {
+        // Check if user is an admin
+        const { supabase } = await import('@/lib/supabase')
+        const { data: adminUser } = await supabase
+          .from('admin_users')
+          .select('id')
+          .eq('email', user.email)
+          .maybeSingle()
+        
+        setIsAdmin(!!adminUser)
+
         const { profile: userProfile, error } = await getUserProfile(user.id)
         
         // If no profile exists, create one from user metadata
@@ -46,11 +65,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
           console.log('ℹ️ Session expired during profile refresh')
           setUser(null)
           setProfile(null)
+          setIsAdmin(false)
           return
         }
         console.error('Error in refreshProfile:', error)
         // Don't throw the error, just log it
       }
+    } else {
+      setIsAdmin(false)
     }
   }
 
@@ -64,6 +86,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Always clear state regardless of sign out success/failure
       setUser(null)
       setProfile(null)
+      setIsAdmin(false)
     }
   }
 
@@ -89,6 +112,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           if (mounted) {
             setUser(null)
             setProfile(null)
+            setIsAdmin(false)
           }
         } else {
           console.error('Error initializing auth:', error)
@@ -142,16 +166,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [initialLoadComplete])
 
-  useEffect(() => {
-    if (user && !profile) {
-      refreshProfile()
-    }
-  }, [user, profile])
+  // The dangerous useEffect that caused infinite loops has been removed.
+  // Profile refreshing is already handled properly in initializeAuth and onAuthStateChange.
 
   const value = {
     user,
     profile,
     loading,
+    isAdmin,
     signOut: handleSignOut,
     refreshProfile,
   }

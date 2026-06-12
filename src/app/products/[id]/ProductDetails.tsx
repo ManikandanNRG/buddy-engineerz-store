@@ -91,7 +91,7 @@ export default function ProductDetails({ product, relatedProducts = [] }: Produc
                 unoptimized={product.images[selectedImage]?.includes('unsplash.com')}
               />
               {product.featured && (
-                <span className="absolute top-4 left-4 bg-purple-600 text-white text-sm px-3 py-1 rounded-full">
+                <span className="absolute top-4 left-4 bg-blue-600 text-white text-sm px-3 py-1 rounded-full">
                   Featured
                 </span>
               )}
@@ -267,7 +267,7 @@ export default function ProductDetails({ product, relatedProducts = [] }: Produc
                 <button
                   onClick={handleAddToCart}
                   disabled={product.stock === 0}
-                  className="flex items-center justify-center gap-2 py-3 rounded-lg transition-all duration-300 bg-purple-600 text-white hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center gap-2 py-3 rounded-lg transition-all duration-300 bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   <ShoppingCart className="h-5 w-5" />
                   <span>Add to Cart</span>
@@ -372,7 +372,7 @@ export default function ProductDetails({ product, relatedProducts = [] }: Produc
                   onClick={() => setSelectedSize(s)}
                   className={`px-2.5 py-1.5 text-xs font-bold rounded-lg border transition-all ${
                     selectedSize === s
-                      ? 'bg-purple-600 text-white border-purple-600'
+                      ? 'bg-blue-600 text-white border-purple-600'
                       : 'border-gray-200 text-gray-600 hover:border-purple-400'
                   }`}
                 >
@@ -384,7 +384,7 @@ export default function ProductDetails({ product, relatedProducts = [] }: Produc
           <button
             onClick={handleAddToCart}
             disabled={product.stock === 0}
-            className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all disabled:bg-gray-400 disabled:cursor-not-allowed whitespace-nowrap shadow-lg shadow-purple-200"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all disabled:bg-gray-400 disabled:cursor-not-allowed whitespace-nowrap shadow-lg shadow-blue-200"
           >
             <ShoppingCart className="w-4 h-4" />
             Add to Cart

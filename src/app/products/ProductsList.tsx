@@ -202,7 +202,7 @@ export default function ProductsList({ initialProducts, initialCategories }: Pro
                   onClick={() => setSelectedCategory(cat)}
                   className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-all duration-200 ${
                     selectedCategory === cat
-                      ? 'bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-200'
+                      ? 'bg-blue-600 text-white border-purple-600 shadow-md shadow-blue-200'
                       : 'bg-white text-gray-600 border-gray-200 hover:border-purple-400 hover:text-purple-600'
                   }`}
                 >
@@ -222,7 +222,7 @@ export default function ProductsList({ initialProducts, initialCategories }: Pro
                   onClick={() => setSelectedGender(g)}
                   className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-all duration-200 ${
                     selectedGender === g
-                      ? 'bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-200'
+                      ? 'bg-blue-600 text-white border-purple-600 shadow-md shadow-blue-200'
                       : 'bg-white text-gray-600 border-gray-200 hover:border-purple-400 hover:text-purple-600'
                   }`}
                 >
@@ -242,7 +242,7 @@ export default function ProductsList({ initialProducts, initialCategories }: Pro
                   onClick={() => setSelectedSize(s)}
                   className={`min-w-[44px] h-9 px-3 rounded-lg text-sm font-bold border transition-all duration-200 ${
                     selectedSize === s
-                      ? 'bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-200'
+                      ? 'bg-blue-600 text-white border-purple-600 shadow-md shadow-blue-200'
                       : 'bg-white text-gray-600 border-gray-200 hover:border-purple-400 hover:text-purple-600'
                   }`}
                 >
@@ -260,7 +260,7 @@ export default function ProductsList({ initialProducts, initialCategories }: Pro
                 onClick={() => setSelectedColor('all')}
                 className={`h-8 px-3 rounded-full text-xs font-bold border transition-all ${
                   selectedColor === 'all'
-                    ? 'bg-purple-600 text-white border-purple-600'
+                    ? 'bg-blue-600 text-white border-purple-600'
                     : 'bg-white text-gray-600 border-gray-200 hover:border-purple-400'
                 }`}
               >
@@ -356,13 +356,13 @@ export default function ProductsList({ initialProducts, initialCategories }: Pro
               <div className="flex border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2.5 transition-colors ${viewMode === 'grid' ? 'bg-purple-600 text-white shadow-inner' : 'text-gray-500 hover:bg-gray-200'}`}
+                  className={`p-2.5 transition-colors ${viewMode === 'grid' ? 'bg-blue-600 text-white shadow-inner' : 'text-gray-500 hover:bg-gray-200'}`}
                 >
                   <Grid className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2.5 transition-colors ${viewMode === 'list' ? 'bg-purple-600 text-white shadow-inner' : 'text-gray-500 hover:bg-gray-200'}`}
+                  className={`p-2.5 transition-colors ${viewMode === 'list' ? 'bg-blue-600 text-white shadow-inner' : 'text-gray-500 hover:bg-gray-200'}`}
                 >
                   <List className="h-4 w-4" />
                 </button>
@@ -432,7 +432,7 @@ export default function ProductsList({ initialProducts, initialCategories }: Pro
                     onClick={() => handlePageChange(i + 1)}
                     className={`px-4 py-2 border rounded-md text-sm font-medium ${
                       currentPage === i + 1
-                        ? 'bg-purple-600 text-white border-purple-600'
+                        ? 'bg-blue-600 text-white border-purple-600'
                         : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
                     }`}
                   >

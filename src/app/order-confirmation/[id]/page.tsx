@@ -189,7 +189,7 @@ export default function OrderConfirmationPage() {
         <div className="bg-gray-50 rounded-b-lg p-6 text-center space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
           <Link
             href="/account/orders"
-            className="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-purple-600 hover:bg-purple-700"
+            className="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300"
           >
             View My Orders
           </Link>

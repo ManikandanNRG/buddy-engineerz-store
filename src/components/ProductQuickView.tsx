@@ -66,7 +66,7 @@ export default function ProductQuickView({ product, isOpen, onClose }: ProductQu
                   unoptimized={product.images[selectedImage]?.includes('unsplash.com')}
                 />
                 {product.featured && (
-                  <span className="absolute top-3 left-3 bg-purple-600 text-white text-xs px-2 py-1 rounded">
+                  <span className="absolute top-3 left-3 bg-blue-600 text-white text-xs px-2 py-1 rounded">
                     Featured
                   </span>
                 )}
@@ -206,7 +206,7 @@ export default function ProductQuickView({ product, isOpen, onClose }: ProductQu
               <div className="space-y-3">
                 <button
                   onClick={handleAddToCart}
-                  className="w-full flex items-center justify-center gap-2 bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-lg hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 transition-colors"
                 >
                   <ShoppingCart className="h-5 w-5" />
                   Add to Cart

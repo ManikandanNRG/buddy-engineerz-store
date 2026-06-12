@@ -62,7 +62,7 @@ export default function ReturnsPage() {
             
             <div className="space-y-8">
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold">1</div>
+                <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">1</div>
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Initiate Return Request</h3>
                   <p className="text-gray-600 mb-3">
@@ -77,7 +77,7 @@ export default function ReturnsPage() {
               </div>
 
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold">2</div>
+                <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">2</div>
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Package Your Item</h3>
                   <p className="text-gray-600 mb-3">
@@ -92,7 +92,7 @@ export default function ReturnsPage() {
               </div>
 
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold">3</div>
+                <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">3</div>
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Ship the Return</h3>
                   <p className="text-gray-600 mb-3">
@@ -107,7 +107,7 @@ export default function ReturnsPage() {
               </div>
 
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold">4</div>
+                <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">4</div>
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Receive Refund/Exchange</h3>
                   <p className="text-gray-600 mb-3">
@@ -334,7 +334,7 @@ export default function ReturnsPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
                 href="/contact"
-                className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium flex items-center justify-center gap-2"
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 transition-colors font-medium flex items-center justify-center gap-2"
               >
                 Contact Support
                 <ArrowRight className="h-4 w-4" />

@@ -364,7 +364,7 @@ export default function CheckoutPage() {
           <div className="flex items-center mt-6">
             <div className={`flex items-center ${step === 'address' ? 'text-purple-600' : 'text-green-600'}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                step === 'address' ? 'bg-purple-600 text-white' : 'bg-green-600 text-white'
+                step === 'address' ? 'bg-blue-600 text-white' : 'bg-green-600 text-white'
               }`}>
                 {step === 'address' ? '1' : '✓'}
               </div>
@@ -375,7 +375,7 @@ export default function CheckoutPage() {
               step === 'payment' ? 'text-purple-600' : 'text-gray-400'
             }`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                step === 'payment' ? 'bg-purple-600 text-white' : 'bg-gray-300 text-gray-600'
+                step === 'payment' ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'
               }`}>
                 2
               </div>
@@ -485,7 +485,7 @@ export default function CheckoutPage() {
                         setEditingAddress(null)
                         resetAddressForm()
                       }}
-                      className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300"
                     >
                       Add Your First Address
                     </button>
@@ -694,7 +694,7 @@ export default function CheckoutPage() {
                         <button
                           type="submit"
                           disabled={submitting}
-                          className="flex-1 bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {submitting ? (
                             <div className="flex items-center justify-center gap-2">
@@ -726,7 +726,7 @@ export default function CheckoutPage() {
                     <button
                       onClick={proceedToPayment}
                       disabled={!selectedAddress}
-                      className="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Continue to Payment
                     </button>
@@ -764,7 +764,7 @@ export default function CheckoutPage() {
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${paymentMethod === 'RAZORPAY' ? 'border-purple-600' : 'border-gray-400'}`}>
-                        {paymentMethod === 'RAZORPAY' && <div className="w-3 h-3 rounded-full bg-purple-600" />}
+                        {paymentMethod === 'RAZORPAY' && <div className="w-3 h-3 rounded-full bg-blue-600" />}
                       </div>
                       <CreditCard className={`h-5 w-5 ${paymentMethod === 'RAZORPAY' ? 'text-purple-600' : 'text-gray-500'}`} />
                       <div>
@@ -781,7 +781,7 @@ export default function CheckoutPage() {
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${paymentMethod === 'UPI' ? 'border-purple-600' : 'border-gray-400'}`}>
-                        {paymentMethod === 'UPI' && <div className="w-3 h-3 rounded-full bg-purple-600" />}
+                        {paymentMethod === 'UPI' && <div className="w-3 h-3 rounded-full bg-blue-600" />}
                       </div>
                       <div className="flex items-center justify-center h-5 w-5 text-gray-500 font-bold text-xs border border-gray-500 rounded">UPI</div>
                       <div>
@@ -807,7 +807,7 @@ export default function CheckoutPage() {
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${paymentMethod === 'COD' ? 'border-purple-600' : 'border-gray-400'}`}>
-                        {paymentMethod === 'COD' && <div className="w-3 h-3 rounded-full bg-purple-600" />}
+                        {paymentMethod === 'COD' && <div className="w-3 h-3 rounded-full bg-blue-600" />}
                       </div>
                       <Truck className={`h-5 w-5 ${paymentMethod === 'COD' ? 'text-purple-600' : 'text-gray-500'}`} />
                       <div>
@@ -834,7 +834,7 @@ export default function CheckoutPage() {
                   <button
                     onClick={handlePayment}
                     disabled={submitting}
-                    className="flex-1 bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submitting ? (
                       <div className="flex items-center justify-center gap-2">
@@ -868,7 +868,7 @@ export default function CheckoutPage() {
                         className="object-cover rounded-lg"
                         unoptimized={item.product.images[0]?.includes('unsplash.com')}
                       />
-                      <span className="absolute -top-2 -right-2 bg-purple-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                         {item.quantity}
                       </span>
                     </div>

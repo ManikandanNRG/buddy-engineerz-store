@@ -178,7 +178,7 @@ export default function BrandStoryPage() {
             <div className="border-t border-gray-200 mt-12 pt-8">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900">Share the Buddy Engineerz Story</h3>
-                <button className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 transition-colors">
                   <Share2 className="h-4 w-4" />
                   Share
                 </button>

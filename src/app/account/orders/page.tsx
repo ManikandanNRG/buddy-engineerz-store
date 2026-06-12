@@ -94,7 +94,7 @@ export default function OrdersPage() {
           <p className="text-gray-600 mb-8">You need to be signed in to view your orders.</p>
           <Link
             href="/auth/login?redirect=/account/orders"
-            className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700"
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300"
           >
             Sign In
           </Link>
@@ -134,7 +134,7 @@ export default function OrdersPage() {
             </p>
             <Link
               href="/products"
-              className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700"
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300"
             >
               Start Shopping
             </Link>

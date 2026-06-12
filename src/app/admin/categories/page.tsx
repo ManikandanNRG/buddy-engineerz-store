@@ -307,7 +307,7 @@ export default function AdminCategoriesPage() {
                 </button>
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                  className="bg-blue-600 hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
                 >
                   <span>➕</span>
                   <span>Add Category</span>
@@ -372,7 +372,7 @@ export default function AdminCategoriesPage() {
                   <p className="text-gray-500">No categories found</p>
                   <button
                     onClick={() => setShowAddModal(true)}
-                    className="mt-4 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg"
+                    className="mt-4 bg-blue-600 hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 text-white px-4 py-2 rounded-lg"
                   >
                     Create First Category
                   </button>
@@ -539,7 +539,7 @@ export default function AdminCategoriesPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg transition-colors flex items-center"
+                  className="px-4 py-2 bg-blue-600 hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 disabled:opacity-50 text-white rounded-lg transition-colors flex items-center"
                 >
                   {isSubmitting ? (
                     <>

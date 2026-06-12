@@ -162,7 +162,7 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 md:flex-none bg-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+          className="flex-1 md:flex-none bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
         >
           {loading ? (
             <Loader2 className="h-5 w-5 animate-spin" />

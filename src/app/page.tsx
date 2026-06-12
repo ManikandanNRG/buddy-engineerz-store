@@ -84,8 +84,7 @@ export default async function HomePage() {
           className="absolute inset-0 w-full h-full object-cover"
         />
         {/* Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/95 via-purple-950/80 to-slate-900/40" />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-black/50" />
 
         {/* Floating code pill — decorative */}
         <div className="absolute top-12 right-12 hidden lg:flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 text-white/80 text-sm font-mono">
@@ -96,15 +95,15 @@ export default async function HomePage() {
         <div className="relative container mx-auto px-4 py-24">
           <div className="max-w-2xl">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-purple-500/20 border border-purple-400/30 backdrop-blur-sm rounded-full px-4 py-1.5 mb-6">
-              <Code className="w-4 h-4 text-purple-300" />
-              <span className="text-purple-200 text-sm font-medium">New Summer Collection 2026</span>
+            <div className="inline-flex items-center gap-2 bg-orange-500/20 border border-orange-400/30 backdrop-blur-sm rounded-full px-4 py-1.5 mb-6">
+              <Code className="w-4 h-4 text-orange-300" />
+              <span className="text-orange-200 text-sm font-medium">New Summer Collection 2026</span>
             </div>
 
             {/* Headline */}
             <h1 className="text-5xl md:text-7xl font-black text-white mb-6 leading-[1.05]">
               Wear Your
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400">
+              <span className="block text-blue-400">
                 Passion.
               </span>
             </h1>
@@ -117,14 +116,14 @@ export default async function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
                 href="/products"
-                className="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-8 py-4 rounded-xl font-bold text-base transition-all duration-200 shadow-lg shadow-purple-900/50 hover:shadow-purple-900/70 hover:-translate-y-0.5 active:translate-y-0"
+                className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-bold text-base transition-all duration-200 shadow-lg shadow-blue-900/50 hover:shadow-blue-900/70 hover:-translate-y-0.5 active:translate-y-0"
               >
                 Shop Collection
                 <ArrowRight className="w-5 h-5" />
               </Link>
               <Link
                 href="/sale"
-                className="inline-flex items-center justify-center gap-2 border-2 border-white/30 text-white hover:bg-white/10 px-8 py-4 rounded-xl font-bold text-base transition-all duration-200 backdrop-blur-sm"
+                className="inline-flex items-center justify-center gap-2 border-2 border-orange-500 text-white hover:bg-orange-500/10 px-8 py-4 rounded-xl font-bold text-base transition-all duration-200 backdrop-blur-sm"
               >
                 View Sale 🔥
               </Link>
@@ -136,39 +135,36 @@ export default async function HomePage() {
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent" />
       </section>
 
-      {/* ─── FEATURES STRIP ─────────────────────────────────── */}
-      <section className="py-6 bg-white border-b border-gray-100">
+      {/* ─── FEATURES + STATS (merged) ─────────────────────── */}
+      <section className="py-12 bg-gray-900 text-white">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {/* Features row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pb-10 mb-10 border-b border-white/10">
             {features.map((f, i) => (
               <div key={i} className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <f.icon className="w-5 h-5 text-purple-600" />
+                <div className="w-10 h-10 bg-orange-500/15 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <f.icon className="w-5 h-5 text-orange-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-gray-900">{f.title}</p>
-                  <p className="text-xs text-gray-500">{f.description}</p>
+                  <p className="text-sm font-bold text-white">{f.title}</p>
+                  <p className="text-xs text-gray-400">{f.description}</p>
                 </div>
               </div>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* ─── SOCIAL PROOF / STATS ─────────────────────────── */}
-      <section className="py-16 bg-gradient-to-br from-purple-950 via-slate-900 to-blue-950 text-white">
-        <div className="container mx-auto px-4">
-          <p className="text-center text-purple-300 text-sm font-semibold uppercase tracking-widest mb-10">
+          {/* Stats row */}
+          <p className="text-center text-orange-400 text-sm font-semibold uppercase tracking-widest mb-10">
             Trusted by engineers worldwide
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((s, i) => (
               <div key={i} className="text-center">
                 <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                  <s.icon className="w-6 h-6 text-purple-300" />
+                  <s.icon className="w-6 h-6 text-orange-400" />
                 </div>
                 <p className="text-3xl font-black mb-1">{s.value}</p>
-                <p className="text-purple-300 text-sm">{s.label}</p>
+                <p className="text-gray-400 text-sm">{s.label}</p>
               </div>
             ))}
           </div>
@@ -179,7 +175,7 @@ export default async function HomePage() {
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <p className="text-purple-600 text-sm font-bold uppercase tracking-widest mb-3">Collections</p>
+            <p className="text-orange-600 text-sm font-bold uppercase tracking-widest mb-3">Collections</p>
             <h2 className="text-4xl font-black text-gray-900 mb-4">Shop by Category</h2>
             <p className="text-gray-500 max-w-xl mx-auto">
               Carefully curated collections designed for the modern engineer
@@ -200,7 +196,7 @@ export default async function HomePage() {
                 <div className="absolute bottom-0 left-0 right-0 p-6">
                   <p className="text-white/70 text-sm mb-1">{cat.description}</p>
                   <h3 className="text-white text-2xl font-black mb-3">{cat.name}</h3>
-                  <span className="inline-flex items-center gap-2 bg-white text-gray-900 text-sm font-bold px-4 py-2 rounded-full group-hover:bg-purple-600 group-hover:text-white transition-colors duration-200">
+                  <span className="inline-flex items-center gap-2 bg-white text-gray-900 text-sm font-bold px-4 py-2 rounded-full group-hover:bg-orange-600 group-hover:text-white transition-colors duration-200">
                     Shop Now <ArrowRight className="w-4 h-4" />
                   </span>
                 </div>
@@ -215,12 +211,12 @@ export default async function HomePage() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
             <div>
-              <p className="text-purple-600 text-sm font-bold uppercase tracking-widest mb-3">Handpicked</p>
+              <p className="text-orange-600 text-sm font-bold uppercase tracking-widest mb-3">Handpicked</p>
               <h2 className="text-4xl font-black text-gray-900">Featured Products</h2>
             </div>
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 font-semibold text-sm"
+              className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-semibold text-sm"
             >
               View All Products <ArrowRight className="w-4 h-4" />
             </Link>
@@ -236,7 +232,7 @@ export default async function HomePage() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
-              <p className="text-purple-600 text-sm font-bold uppercase tracking-widest mb-4">Our Story</p>
+              <p className="text-orange-600 text-sm font-bold uppercase tracking-widest mb-4">Our Story</p>
               <h2 className="text-4xl font-black text-gray-900 mb-6">Built by Engineers,<br />for Engineers</h2>
               <p className="text-gray-500 text-lg leading-relaxed mb-6">
                 We understand the passion that drives engineers and developers. Our mission is to create premium apparel
@@ -247,7 +243,7 @@ export default async function HomePage() {
               </p>
               <Link
                 href="/about"
-                className="inline-flex items-center gap-2 bg-gray-900 text-white px-7 py-3.5 rounded-xl font-bold hover:bg-purple-700 transition-colors duration-200"
+                className="inline-flex items-center gap-2 bg-gray-900 text-white px-7 py-3.5 rounded-xl font-bold hover:bg-orange-600 transition-colors duration-200"
               >
                 Learn More <ArrowRight className="w-4 h-4" />
               </Link>
@@ -275,7 +271,7 @@ export default async function HomePage() {
       </section>
 
       {/* ─── NEWSLETTER ──────────────────────────────────── */}
-      <section className="py-20 bg-gradient-to-br from-purple-50 to-blue-50">
+      <section className="py-20 bg-orange-50">
         <div className="container mx-auto px-4">
           <NewsletterSubscription />
         </div>

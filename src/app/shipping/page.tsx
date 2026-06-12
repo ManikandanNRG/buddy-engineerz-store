@@ -63,7 +63,7 @@ export default function ShippingPage() {
             {/* Express Shipping */}
             <div className="bg-white rounded-lg shadow-sm p-6 border-2 border-purple-200 relative">
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
                   Recommended
                 </span>
               </div>
@@ -266,15 +266,15 @@ export default function ShippingPage() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">How to Track Your Order</h3>
                 <div className="space-y-3">
                   <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
+                    <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
                     <p className="text-gray-600">Check your email for the shipping confirmation with tracking number</p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
+                    <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
                     <p className="text-gray-600">Visit your account dashboard to view order status</p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
+                    <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
                     <p className="text-gray-600">Use the tracking number on our courier partner's website</p>
                   </div>
                 </div>

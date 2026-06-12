@@ -64,7 +64,7 @@ export default function CartDrawer() {
               My Cart
             </h2>
             {itemCount > 0 && (
-              <span className="bg-purple-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+              <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
                 {itemCount}
               </span>
             )}
@@ -109,7 +109,7 @@ export default function CartDrawer() {
               <Link
                 href="/products"
                 onClick={closeCart}
-                className="inline-flex items-center gap-2 bg-purple-600 text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-purple-700 transition-colors"
+                className="inline-flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 transition-colors"
               >
                 Start Shopping
                 <ArrowRight className="w-4 h-4" />
@@ -217,7 +217,7 @@ export default function CartDrawer() {
             <Link
               href="/checkout"
               onClick={closeCart}
-              className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98] shadow-lg shadow-purple-200"
+              className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 text-white py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98] shadow-lg shadow-blue-200"
             >
               Checkout
               <ArrowRight className="w-4 h-4" />

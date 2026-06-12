@@ -38,12 +38,7 @@ export default function AnnouncementBar() {
 
   return (
     <div
-      className="relative z-50 text-white text-sm font-medium overflow-hidden"
-      style={{
-        background: 'linear-gradient(90deg, #5b21b6 0%, #7c3aed 40%, #3b82f6 80%, #5b21b6 100%)',
-        backgroundSize: '200% 100%',
-        animation: 'gradient-shift 6s ease infinite',
-      }}
+      className="relative z-50 bg-orange-600 text-white text-sm font-medium overflow-hidden"
     >
       <style>{`
         @keyframes gradient-shift {

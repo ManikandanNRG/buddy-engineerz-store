@@ -130,7 +130,7 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSideb
       `}>
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-between h-16 px-4 bg-purple-600">
+          <div className="flex items-center justify-between h-16 px-4 bg-blue-600">
             <Link href="/admin/dashboard" className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">

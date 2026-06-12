@@ -252,7 +252,7 @@ export default function AdminLogsPage() {
                 </button>
                 <button
                   onClick={handleDownload}
-                  className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 transition-colors"
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Export CSV

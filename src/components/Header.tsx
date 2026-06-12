@@ -24,7 +24,7 @@ import CartDrawer from '@/components/CartDrawer'
 
 // User Menu Component
 function UserMenu() {
-  const { user, profile, loading, signOut } = useAuth()
+  const { user, profile, loading, isAdmin, signOut } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
 
   const handleSignOut = async () => {
@@ -53,7 +53,7 @@ function UserMenu() {
         </Link>
         <Link
           href="/auth/signup"
-          className="bg-purple-600 text-white px-3 py-1.5 rounded-md text-sm hover:bg-purple-700 transition-colors"
+          className="bg-blue-600 text-white px-3 py-1.5 rounded-md text-sm hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 whitespace-nowrap shadow-md"
         >
           Sign Up
         </Link>
@@ -78,6 +78,18 @@ function UserMenu() {
             onClick={() => setIsOpen(false)}
           />
           <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20 border border-gray-200">
+            {/* Admin Dashboard Link - Only visible for admins */}
+            {isAdmin && (
+              <Link
+                href="/admin/dashboard"
+                className="flex items-center px-4 py-2 text-sm text-purple-700 bg-purple-50 hover:bg-purple-100 font-medium"
+                onClick={() => setIsOpen(false)}
+              >
+                <Briefcase className="h-4 w-4 mr-2" />
+                Admin Dashboard
+              </Link>
+            )}
+            
             <Link
               href="/account"
               className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -97,7 +109,7 @@ function UserMenu() {
             <hr className="my-1" />
             <button
               onClick={handleSignOut}
-              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
             >
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out
@@ -131,10 +143,14 @@ export default function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">BE</span>
-            </div>
-            <span className="text-xl font-bold text-gray-900">Buddy Engineerz</span>
+            <img
+              src="/images/logo.png"
+              alt="Buddy Engineerz Logo"
+              className="h-14 w-auto"
+            />
+            <span className="text-xl font-extrabold uppercase tracking-tight text-gray-900">
+              BUDDY ENGINEER<span className="text-red-700">Z</span>
+            </span>
           </Link>
 
           {/* Navigation */}
@@ -225,7 +241,7 @@ export default function Header() {
                 <div className="absolute -top-1 -right-1 bg-gray-200 rounded-full h-5 w-5 animate-pulse"></div>
               ) : (
                 cartItemsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                  <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
                     {cartItemsCount}
                   </span>
                 )

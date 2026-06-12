@@ -54,7 +54,7 @@ export default function ProductFilters({
             <Filter className="h-5 w-5" />
             <span className="font-medium">Filters</span>
             {activeFiltersCount > 0 && (
-              <span className="bg-purple-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              <span className="bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                 {activeFiltersCount}
               </span>
             )}

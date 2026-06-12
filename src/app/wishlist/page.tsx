@@ -105,7 +105,7 @@ export default function WishlistPage() {
             
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 bg-purple-600 text-white px-8 py-4 rounded-2xl hover:bg-purple-700 transition-all shadow-lg hover:shadow-purple-200 font-bold mb-16"
+              className="inline-flex items-center gap-2 bg-blue-600 text-white px-8 py-4 rounded-2xl hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 transition-all shadow-lg hover:shadow-blue-200 font-bold mb-16"
             >
               Discover Products
             </Link>

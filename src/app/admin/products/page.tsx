@@ -397,7 +397,7 @@ export default function AdminProductsPage() {
               <div className="flex space-x-2">
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                  className="bg-blue-600 hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
                 >
                   <span className="text-white font-bold">+</span>
                   <span>Add Product</span>
@@ -441,7 +441,7 @@ export default function AdminProductsPage() {
                   <p className="text-gray-500">No products found</p>
                   <button
                     onClick={() => setShowAddModal(true)}
-                    className="mt-4 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    className="mt-4 bg-blue-600 hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 text-white px-4 py-2 rounded-lg transition-colors"
                   >
                     Add Your First Product
                   </button>
@@ -493,7 +493,7 @@ export default function AdminProductsPage() {
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleEdit(product)}
-                            className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                            className="flex-1 bg-blue-600 hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 text-white px-3 py-1 rounded text-sm transition-colors"
                           >
                             Edit
                           </button>
@@ -813,7 +813,7 @@ export default function AdminProductsPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-100 hover:text-gray-900 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <div className="flex items-center">
